@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, LogOut, Zap } from 'lucide-react';
+import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, LogOut, Zap, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { computeStreak, computeHeatmap, SUBJECTS_SEED } from './lib/helpers';
 import AuthGate from './components/AuthGate';
@@ -253,24 +253,20 @@ export default function App() {
         ${sidebarCollapsed ? '-translate-x-full md:translate-x-0 md:w-16' : 'translate-x-0 w-64 md:w-56'} `}
         style={{ background: 'linear-gradient(180deg, rgba(124,58,237,0.05) 0%, rgba(7,7,26,0.8) 100%)' }}>
         
-        {/* Header - Mobile Hamburger & Actions */}
-        <header className="h-16 shrink-0 flex items-center justify-between px-4 sm:px-8 border-b border-white/[0.02] bg-[#07071a]/50 backdrop-blur-md sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="md:hidden p-2 -ml-2 text-gray-400 hover:text-white rounded-lg">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-            </button>
-            <div className="glass px-3 py-1.5 rounded-full flex items-center gap-2 border-violet-500/20">
-            <div className="w-8 h-8 rounded-xl btn-gradient flex items-center justify-center shrink-0 glow-violet">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className={`text-sm font-bold tracking-tight whitespace-nowrap transition-opacity ${sidebarCollapsed ? 'opacity-100 md:opacity-0 w-auto md:w-0' : 'opacity-100'}`}>
-              <span className="gradient-text">Exam</span>
-              <span className="text-gray-400 font-light">Focus</span>
-            </span>
+        {/* Sidebar Logo */}
+        <div className="flex items-center gap-3 px-4 h-16 shrink-0 border-b border-white/[0.05]">
+          <div className="w-8 h-8 rounded-xl btn-gradient flex items-center justify-center shrink-0 glow-violet">
+            <Zap className="w-4 h-4 text-white" />
           </div>
-          </div>
-          {/* Add other mobile header actions here if needed */}
-        </header>
+          <span className={`text-sm font-bold tracking-tight whitespace-nowrap transition-opacity ${sidebarCollapsed ? 'opacity-100 md:opacity-0 w-auto md:w-0' : 'opacity-100'}`}>
+            <span className="gradient-text">Exam</span>
+            <span className="text-gray-400 font-light">Focus</span>
+          </span>
+          
+          <button onClick={() => setSidebarCollapsed(true)} className="md:hidden ml-auto p-1 text-gray-400 hover:text-white rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Nav */}
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto scrollbar">
@@ -308,6 +304,27 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full ${sidebarCollapsed ? 'md:pl-16' : 'md:pl-56'}`}>
+        {/* Mobile Top Header */}
+        <header className="md:hidden h-16 shrink-0 flex items-center justify-between px-4 border-b border-white/[0.05] bg-[#07071a]/80 backdrop-blur-xl sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setSidebarCollapsed(false)} className="p-2 -ml-2 text-gray-400 hover:text-white rounded-lg">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg btn-gradient flex items-center justify-center shrink-0 glow-violet">
+                <Zap className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm font-bold tracking-tight">
+                <span className="gradient-text">Exam</span>
+                <span className="text-gray-400 font-light">Focus</span>
+              </span>
+            </div>
+          </div>
+          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-violet-600 to-blue-600 flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+            {session.user.email?.[0].toUpperCase()}
+          </div>
+        </header>
+
         {dataLoading ? (
           <div className="flex items-center justify-center h-screen gap-3 text-gray-600">
             <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
