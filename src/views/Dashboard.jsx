@@ -91,7 +91,7 @@ export default function DashboardView({ subjects, sessions, streak, setActiveTab
             </div>
           </div>
 
-          {/* Upcoming Exams */}
+          {/* Upcoming Exams — Traffic-Light Urgency */}
           <div className="glass rounded-2xl p-5">
             <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-gray-500" /> Upcoming Exams
@@ -101,15 +101,21 @@ export default function DashboardView({ subjects, sessions, streak, setActiveTab
               {upcomingExams.map(exam => {
                 const c = SUBJECT_COLORS[exam.color] || SUBJECT_COLORS.blue;
                 const days = daysUntil(exam.exam_date);
+                const urgency = days <= 7 ? 'critical' : days <= 29 ? 'warning' : 'safe';
+                const urgencyColor = urgency === 'critical' ? 'text-red-400' : urgency === 'warning' ? 'text-amber-400' : 'text-emerald-400';
+                const urgencyBg = urgency === 'critical' ? 'rgba(239,68,68,0.08)' : urgency === 'warning' ? 'rgba(245,158,11,0.06)' : 'rgba(16,185,129,0.05)';
+                const urgencyBorder = urgency === 'critical' ? '1px solid rgba(239,68,68,0.25)' : urgency === 'warning' ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.06)';
+                const urgencyLabel = urgency === 'critical' ? '🔴 Critical' : urgency === 'warning' ? '🟡 Soon' : '🟢 Safe';
                 return (
-                  <div key={exam.id} className={`px-4 py-3 rounded-xl flex justify-between items-center ${c.border}`}
-                    style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid` }}>
+                  <div key={exam.id} className={`px-4 py-3 rounded-xl flex justify-between items-center transition-all ${urgency === 'critical' ? 'animate-pulse' : ''}`}
+                    style={{ background: urgencyBg, border: urgencyBorder, boxShadow: urgency === 'critical' ? '0 0 15px rgba(239,68,68,0.15)' : 'none' }}>
                     <div>
                       <p className={`font-black text-sm ${c.text}`}>{exam.short_name}</p>
                       <p className="text-[11px] text-gray-600">{new Date(exam.exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider mt-1 inline-block ${urgencyColor}`}>{urgencyLabel}</span>
                     </div>
                     <div className="text-right">
-                      <p className={`text-2xl font-black ${days <= 3 ? 'text-red-400' : days <= 7 ? 'text-orange-400' : c.text}`}>{days}</p>
+                      <p className={`text-2xl font-black ${urgencyColor}`}>{days}</p>
                       <p className="text-[10px] text-gray-600 uppercase font-bold tracking-wider">days</p>
                     </div>
                   </div>

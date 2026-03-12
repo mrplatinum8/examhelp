@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Plus, X, Trash2, Sparkles } from 'lucide-react';
 import { SUBJECT_COLORS } from '../lib/helpers';
 
@@ -31,6 +31,20 @@ export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard,
     await onRateCard(curCard, difficulty);
     setTimeout(() => setCardIdx(p => p + 1), 350);
   };
+
+  // Keyboard shortcuts: Space=flip, 1=Hard, 2=Medium, 3=Easy
+  const handleKeyDown = useCallback((e) => {
+    if (showAdd) return;
+    if (e.code === 'Space') { e.preventDefault(); setIsFlipped(f => !f); }
+    if (isFlipped && e.key === '1') next('Hard');
+    if (isFlipped && e.key === '2') next('Medium');
+    if (isFlipped && e.key === '3') next('Easy');
+  }, [showAdd, isFlipped, curCard]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const handleAdd = async () => {
     const sub = newSub || subjects[0]?.id;
@@ -133,6 +147,14 @@ export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard,
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Keyboard shortcut hint */}
+          <p className="text-center text-[10px] text-gray-700 mt-3 font-medium hidden md:block">
+            <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-mono text-[9px]">Space</kbd> flip · 
+            <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-mono text-[9px] ml-1">1</kbd> Hard · 
+            <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-mono text-[9px] ml-1">2</kbd> Med · 
+            <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-gray-500 font-mono text-[9px] ml-1">3</kbd> Easy
+          </p>
         </>
       )}
 

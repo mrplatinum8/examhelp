@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, LogOut, Zap, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, LogOut, Zap, Menu, X, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { computeStreak, computeHeatmap, SUBJECTS_SEED } from './lib/helpers';
 import AuthGate from './components/AuthGate';
@@ -10,10 +10,11 @@ import CalendarView from './views/Calendar';
 import FlashcardsView from './views/Flashcards';
 import AnalyticsView from './views/Analytics';
 import HeatmapView from './views/Heatmap';
+import RevisionScheduleView from './views/RevisionSchedule';
 
-const TABS = ['Dashboard', 'Subjects', 'Pomodoro', 'Calendar', 'Flashcards', 'Analytics', 'Heatmap'];
-const TAB_ICONS = { Dashboard: Home, Subjects: BookOpen, Pomodoro: Clock, Calendar: CalendarIcon, Flashcards: Layers, Analytics: BarChart2, Heatmap: Activity };
-const VIEWS = { Dashboard: DashboardView, Subjects: SubjectsView, Pomodoro: PomodoroView, Calendar: CalendarView, Flashcards: FlashcardsView, Analytics: AnalyticsView, Heatmap: HeatmapView };
+const TABS = ['Dashboard', 'Subjects', 'Pomodoro', 'Calendar', 'Flashcards', 'Revision', 'Analytics', 'Heatmap'];
+const TAB_ICONS = { Dashboard: Home, Subjects: BookOpen, Pomodoro: Clock, Calendar: CalendarIcon, Flashcards: Layers, Revision: CalendarCheck, Analytics: BarChart2, Heatmap: Activity };
+const VIEWS = { Dashboard: DashboardView, Subjects: SubjectsView, Pomodoro: PomodoroView, Calendar: CalendarView, Flashcards: FlashcardsView, Revision: RevisionScheduleView, Analytics: AnalyticsView, Heatmap: HeatmapView };
 
 async function seedUser() {
   for (let i = 0; i < SUBJECTS_SEED.length; i++) {
