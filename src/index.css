@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* ── Base ───────────────────────────────────────────────── */
+body {
+  background-color: #07071a;
+  color: #f1f1f8;
+  margin: 0;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Glass Cards ───────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.glass-violet {
+  background: rgba(139, 92, 246, 0.06);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+.glass-blue {
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* ── Gradient Text ─────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-blue {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow Effects ──────────────────────────────────────── */
+.glow-violet  { box-shadow: 0 0 20px rgba(139, 92, 246, 0.25); }
+.glow-blue    { box-shadow: 0 0 20px rgba(59, 130, 246, 0.25); }
+.glow-pink    { box-shadow: 0 0 20px rgba(244, 114, 182, 0.25); }
+.glow-green   { box-shadow: 0 0 20px rgba(52, 211, 153, 0.25); }
+
+/* ── Gradient Borders ──────────────────────────────────── */
+.border-gradient {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(139,92,246,0.4), rgba(96,165,250,0.4), rgba(244,114,182,0.4));
+  z-index: -1;
+}
+
+/* ── Gradient Progress Bar ─────────────────────────────── */
+.progress-gradient {
+  background: linear-gradient(90deg, #7c3aed 0%, #3b82f6 50%, #06b6d4 100%);
+}
+.progress-gradient-orange { background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%); }
+.progress-gradient-green  { background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%); }
+.progress-gradient-pink   { background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 100%); }
+
+/* ── Gradient Buttons ──────────────────────────────────── */
+.btn-gradient {
+  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+}
+.btn-gradient:hover {
+  box-shadow: 0 4px 25px rgba(124, 58, 237, 0.5);
+  transform: translateY(-1px);
+}
+.btn-gradient:active { transform: translateY(0); }
+
+/* ── Background Mesh ───────────────────────────────────── */
+.mesh-bg {
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 85% 70%, rgba(59, 130, 246, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 50% 50%, rgba(244, 114, 182, 0.04) 0%, transparent 70%);
+}
+
+/* ── Sidebar Active ────────────────────────────────────── */
+.nav-active {
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.15));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: white;
+}
+.nav-active svg { color: #a78bfa; }
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+.scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+.scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Card Hover Elevation ──────────────────────────────── */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  will-change: transform;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+/* ── Timer Glow Ring ───────────────────────────────────── */
+.timer-glow {
+  text-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+}
+.timer-glow-green {
+  text-shadow: 0 0 30px rgba(52, 211, 153, 0.6);
+}
+
+/* ── Flip Animation helpers ────────────────────────────── */
+.perspective { perspective: 1200px; }
+.preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+
+/* ── Heatmap cell ──────────────────────────────────────── */
+.heatmap-0  { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+.heatmap-1  { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.3); }
+.heatmap-2  { background: rgba(124,58,237,0.45); border-color: rgba(124,58,237,0.6); box-shadow: 0 0 6px rgba(124,58,237,0.3); }
+.heatmap-3  { background: rgba(139,92,246,0.8); border-color: rgba(167,139,250,0.8); box-shadow: 0 0 10px rgba(139,92,246,0.5); }

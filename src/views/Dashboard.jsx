@@ -1,0 +1,124 @@
+import React from 'react';
+import { Flame, CheckCircle, GraduationCap, ArrowRight, Clock, TrendingUp } from 'lucide-react';
+import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
+
+const GRAD = ['progress-gradient', 'progress-gradient-orange', 'progress-gradient-green', 'progress-gradient-pink', 'progress-gradient', 'progress-gradient-orange', 'progress-gradient-green', 'progress-gradient-pink'];
+
+export default function DashboardView({ subjects, sessions, streak, setActiveTab }) {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayPomodoros = sessions.filter(s => s.started_at?.startsWith(todayStr)).length;
+  const totalFocusMin = sessions.filter(s => s.started_at?.startsWith(todayStr)).reduce((a, s) => a + (s.duration_minutes || 25), 0);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const upcomingExams = [...subjects].filter(s => s.exam_date && daysUntil(s.exam_date) >= 0)
+    .sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date));
+  const bestSubject = [...subjects].sort((a, b) => b.pomodoroCount - a.pomodoroCount)[0];
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Header */}
+      <div className="flex flex-wrap justify-between items-start gap-4 mb-2">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight">
+            <span className="gradient-text">{greeting}</span>
+            <span className="text-white">.</span>
+          </h1>
+          <p className="text-gray-500 mt-1.5 text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          { icon: <Flame className="w-5 h-5 text-orange-400" />, label: 'Study Streak', value: `${streak}d`, glow: 'glow-orange', gradient: 'from-orange-500/10 to-red-500/10', border: 'border-orange-500/20' },
+          { icon: <CheckCircle className="w-5 h-5 text-emerald-400" />, label: 'Pomodoros Today', value: todayPomodoros, glow: '', gradient: 'from-emerald-500/10 to-cyan-500/10', border: 'border-emerald-500/20' },
+          { icon: <Clock className="w-5 h-5 text-violet-400" />, label: 'Focus Time', value: `${totalFocusMin}m`, glow: '', gradient: 'from-violet-500/10 to-blue-500/10', border: 'border-violet-500/20' },
+        ].map((stat, i) => (
+          <div key={i} className={`glass card-hover rounded-2xl p-5 border bg-gradient-to-br ${stat.gradient} ${stat.border}`}>
+            <div className="flex items-center gap-2.5 mb-3">{stat.icon}<span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</span></div>
+            <p className="text-3xl font-black text-white">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Subject Progress */}
+        <div className="lg:col-span-2 glass rounded-2xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-white">Subject Progress</h2>
+            <button onClick={() => setActiveTab('Subjects')} className="text-xs text-violet-400 hover:text-violet-300 font-semibold transition-colors">View all →</button>
+          </div>
+          <div className="space-y-5">
+            {subjects.length === 0 && <p className="text-gray-600 text-sm text-center py-6">Subjects loading…</p>}
+            {subjects.map((sub, i) => {
+              const c = SUBJECT_COLORS[sub.color] || SUBJECT_COLORS.blue;
+              return (
+                <div key={sub.id}>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-semibold text-gray-300">{sub.name} <span className="text-gray-600 text-xs ml-1">({sub.short_name})</span></span>
+                    <span className={`font-bold ${c.text}`}>{sub.progress}%</span>
+                  </div>
+                  <div className="w-full bg-white/[0.05] rounded-full h-2 overflow-hidden">
+                    <div className={`h-2 rounded-full ${GRAD[i % GRAD.length]} transition-all duration-1000 ease-out`} style={{ width: `${sub.progress}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right col */}
+        <div className="space-y-5">
+          {/* Mission */}
+          <div onClick={() => setActiveTab('Pomodoro')}
+            className="glass card-hover rounded-2xl p-5 border border-violet-500/15 cursor-pointer relative overflow-hidden group transition-all">
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-blue-500/5 group-hover:from-violet-500/10 group-hover:to-blue-500/10 transition-all" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-lg btn-gradient flex items-center justify-center"><TrendingUp className="w-3 h-3 text-white" /></div>
+                <h2 className="text-sm font-bold text-white">Daily Mission</h2>
+              </div>
+              {bestSubject ? (
+                <>
+                  <p className="text-gray-400 text-sm leading-relaxed">Focus on <strong className={SUBJECT_COLORS[bestSubject.color]?.text}>{bestSubject.short_name}</strong> — aim for <strong className="text-white">4 Pomodoros</strong> today.</p>
+                  <div className="mt-4 flex items-center gap-1.5 text-xs text-violet-400 font-bold">
+                    Start Session <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-600 text-sm">Complete your first Pomodoro to unlock your mission!</p>
+              )}
+            </div>
+          </div>
+
+          {/* Upcoming Exams */}
+          <div className="glass rounded-2xl p-5">
+            <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-gray-500" /> Upcoming Exams
+            </h2>
+            {upcomingExams.length === 0 && <p className="text-gray-600 text-xs text-center py-3">No exams scheduled.</p>}
+            <div className="space-y-3">
+              {upcomingExams.map(exam => {
+                const c = SUBJECT_COLORS[exam.color] || SUBJECT_COLORS.blue;
+                const days = daysUntil(exam.exam_date);
+                return (
+                  <div key={exam.id} className={`px-4 py-3 rounded-xl flex justify-between items-center ${c.border}`}
+                    style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid` }}>
+                    <div>
+                      <p className={`font-black text-sm ${c.text}`}>{exam.short_name}</p>
+                      <p className="text-[11px] text-gray-600">{new Date(exam.exam_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-2xl font-black ${days <= 3 ? 'text-red-400' : days <= 7 ? 'text-orange-400' : c.text}`}>{days}</p>
+                      <p className="text-[10px] text-gray-600 uppercase font-bold tracking-wider">days</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
