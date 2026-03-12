@@ -98,37 +98,37 @@ export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard,
           <div className="perspective w-full mb-6 cursor-pointer" onClick={() => !isFlipped && setIsFlipped(true)}>
             <div className="preserve-3d relative w-full" style={{ transform: isFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)', transition: 'transform 0.55s cubic-bezier(.4,2,.6,1)' }}>
               {/* Front */}
-              <div className="backface-hidden glass rounded-3xl p-10 min-h-[260px] flex flex-col" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
-                {curSub && <span className={`self-start text-xs font-black px-3 py-1 rounded-full mb-4 ${c.text}`}
+              <div className="backface-hidden glass rounded-3xl p-6 md:p-10 min-h-[220px] md:min-h-[260px] flex flex-col" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+                {curSub && <span className={`self-start text-[10px] md:text-xs font-black px-2.5 py-1 md:px-3 md:py-1 rounded-full mb-3 md:mb-4 ${c.text}`}
                   style={{ background: 'rgba(139,92,246,0.1)', border: `1px solid rgba(139,92,246,0.2)` }}>{curSub.short_name}</span>}
                 <div className="flex-1 flex items-center justify-center text-center">
-                  <h2 className="text-2xl lg:text-3xl font-black text-white leading-tight">{curCard?.question}</h2>
+                  <h2 className="text-xl md:text-2xl lg:text-3xl font-black text-white leading-tight">{curCard?.question}</h2>
                 </div>
-                <p className="text-center text-gray-700 text-xs mt-4 animate-pulse font-medium">Tap card to reveal answer</p>
+                <p className="text-center text-gray-700 text-[10px] md:text-xs mt-3 md:mt-4 animate-pulse font-medium">Tap card to reveal answer</p>
               </div>
               {/* Back */}
-              <div className="backface-hidden absolute inset-0 rounded-3xl p-10 flex flex-col" style={{ transform: 'rotateX(180deg)', background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08))', border: '1px solid rgba(139,92,246,0.25)' }}>
-                <span className="self-start text-xs font-bold text-violet-400 mb-4">Answer</span>
-                <div className="flex-1 flex items-center justify-center text-center overflow-y-auto scrollbar">
-                  <p className="text-xl lg:text-2xl font-medium text-white leading-relaxed">{curCard?.answer}</p>
+              <div className="backface-hidden absolute inset-0 rounded-3xl p-6 md:p-10 flex flex-col" style={{ transform: 'rotateX(180deg)', background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08))', border: '1px solid rgba(139,92,246,0.25)' }}>
+                <span className="self-start text-[10px] md:text-xs font-bold text-violet-400 mb-3 md:mb-4">Answer</span>
+                <div className="flex-1 flex items-center justify-center text-center overflow-y-auto scrollbar pb-2">
+                  <p className="text-lg md:text-xl lg:text-2xl font-medium text-white leading-relaxed">{curCard?.answer}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Difficulty */}
-          <div className={`flex gap-3 justify-center transition-all duration-400 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+          <div className={`flex flex-wrap gap-2 md:gap-3 justify-center transition-all duration-400 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
             {[
               ['Hard', 'rgba(239,68,68,0.1)', 'rgba(239,68,68,0.25)', 'text-red-400'],
               ['Medium', 'rgba(245,158,11,0.1)', 'rgba(245,158,11,0.25)', 'text-amber-400'],
               ['Easy', 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.25)', 'text-emerald-400'],
             ].map(([label, bg, border, text]) => (
               <button key={label} onClick={e => { e.stopPropagation(); next(label); }}
-                className={`px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 ${text}`}
+                className={`flex-1 min-w-[80px] px-3 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all hover:scale-105 ${text}`}
                 style={{ background: bg, border: `1px solid ${border}` }}>{label}</button>
             ))}
             <button onClick={e => { e.stopPropagation(); if (curCard) onDeleteCard(curCard.id); }}
-              className="px-3 py-3 rounded-xl text-gray-700 hover:text-red-400 transition-colors"
+              className="px-3 md:px-4 py-2.5 md:py-3 rounded-xl text-gray-700 hover:text-red-400 transition-colors shrink-0"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <Trash2 className="w-4 h-4" />
             </button>

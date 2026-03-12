@@ -35,16 +35,16 @@ export default function CalendarView({ subjects, sessions, studyLogs, onAddStudy
 
   return (
     <div className="animate-in fade-in duration-300 max-w-4xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-black w-48"><span className="gradient-text">{currentDate.toLocaleDateString('en-US', { month: 'long' })}</span> <span className="text-white">{year}</span></h1>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <h1 className="text-2xl sm:text-3xl font-black w-40 sm:w-48"><span className="gradient-text">{currentDate.toLocaleDateString('en-US', { month: 'long' })}</span> <span className="text-white">{year}</span></h1>
             <div className="flex gap-1">
-              <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="p-1.5 rounded-lg glass hover:bg-white/10 transition-colors text-white"><ChevronLeft className="w-5 h-5" /></button>
-              <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="p-1.5 rounded-lg glass hover:bg-white/10 transition-colors text-white"><ChevronRight className="w-5 h-5" /></button>
+              <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="p-1 sm:p-1.5 rounded-lg glass hover:bg-white/10 transition-colors text-white"><ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" /></button>
+              <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="p-1 sm:p-1.5 rounded-lg glass hover:bg-white/10 transition-colors text-white"><ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" /></button>
             </div>
           </div>
-          <p className="text-gray-600 text-sm mt-1.5">Click any day to log a session or set an exam date.</p>
+          <p className="text-gray-600 text-[10px] sm:text-sm mt-1 sm:mt-1.5">Click any day to log a session or set an exam date.</p>
         </div>
         <div className="flex gap-4 text-xs text-gray-500 font-semibold">
           <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-violet-500" /> Exam</span>
@@ -52,15 +52,15 @@ export default function CalendarView({ subjects, sessions, studyLogs, onAddStudy
         </div>
       </div>
 
-      <div className="glass rounded-3xl p-6">
+      <div className="glass rounded-2xl sm:rounded-3xl p-3 sm:p-6 overflow-hidden">
         {/* Day headers */}
-        <div className="grid grid-cols-7 mb-3">
+        <div className="grid grid-cols-7 mb-2 sm:mb-3">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} className="text-center text-[11px] font-bold text-gray-700 py-2 tracking-widest uppercase">{d}</div>
+            <div key={d} className="text-center text-[9px] sm:text-[11px] font-bold text-gray-700 py-1 sm:py-2 tracking-widest uppercase">{d}</div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
           {Array.from({ length: firstDay }).map((_, i) => <div key={`b${i}`} className="aspect-square" />)}
           {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => {
             const dateStr = `${year}-${pad(month + 1)}-${pad(d)}`;
@@ -71,16 +71,16 @@ export default function CalendarView({ subjects, sessions, studyLogs, onAddStudy
 
             return (
               <div key={d} onClick={() => openModal(d)}
-                className="aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-95 relative"
+                className="aspect-square rounded-lg sm:rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-95 relative"
                 style={{
                   background: isToday ? 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.15))' : studied ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.02)',
                   border: isToday ? '1px solid rgba(139,92,246,0.4)' : '1px solid rgba(255,255,255,0.04)',
                   boxShadow: isToday ? '0 0 15px rgba(124,58,237,0.2)' : 'none',
                 }}>
-                <span className={`text-sm font-bold ${isToday ? 'text-violet-300' : 'text-gray-400'}`}>{d}</span>
-                <div className="flex gap-1 mt-0.5">
-                  {studied && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
-                  {exam && <div className={`w-1.5 h-1.5 rounded-full ${ec?.bg || 'bg-violet-500'}`} />}
+                <span className={`text-[10px] sm:text-sm font-bold ${isToday ? 'text-violet-300' : 'text-gray-400'}`}>{d}</span>
+                <div className="flex gap-0.5 sm:gap-1 mt-px sm:mt-0.5">
+                  {studied && <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400" />}
+                  {exam && <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${ec?.bg || 'bg-violet-500'}`} />}
                 </div>
               </div>
             );

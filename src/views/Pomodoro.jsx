@@ -67,16 +67,16 @@ export default function PomodoroView({ subjects, sessions, onAddSession }) {
   return (
     <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Hero Timer */}
-      <div className="lg:col-span-2 glass rounded-3xl p-8 flex flex-col items-center justify-center min-h-[520px] relative overflow-hidden">
+      <div className="lg:col-span-2 glass rounded-2xl md:rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center min-h-[420px] md:min-h-[520px] relative overflow-hidden">
         {/* Ambient glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full opacity-30 transition-colors duration-1000`}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full opacity-30 transition-colors duration-1000`}
                style={{ background: isFocusMode ? 'radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)' }} />
         </div>
 
         {/* Subject Selector */}
-        <div className="relative z-10 w-full max-w-xs mb-8">
-          <label className="block text-center text-[10px] text-gray-600 uppercase tracking-widest mb-2 font-bold">Focusing on</label>
+        <div className="relative z-10 w-full max-w-xs mb-6 md:mb-8">
+          <label className="block text-center text-[10px] text-gray-600 uppercase tracking-widest mb-1.5 md:mb-2 font-bold">Focusing on</label>
           <div className="relative">
             <select value={selId} onChange={e => setSelId(e.target.value)} disabled={isRunning}
               className="w-full appearance-none glass rounded-xl py-2.5 px-4 text-white font-bold text-sm text-center outline-none cursor-pointer disabled:opacity-60 border-0 bg-white/[0.05]"
@@ -88,7 +88,7 @@ export default function PomodoroView({ subjects, sessions, onAddSession }) {
         </div>
 
         {/* SVG Ring + Timer */}
-        <div className="relative z-10 flex items-center justify-center mb-8" style={{ width: 260, height: 260 }}>
+        <div className="relative z-10 flex items-center justify-center mb-6 md:mb-8 scale-90 md:scale-100" style={{ width: 260, height: 260 }}>
           <svg width="260" height="260" className="-rotate-90 absolute">
             <circle cx="130" cy="130" r={r} stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="transparent" />
             <circle cx="130" cy="130" r={r} stroke="url(#timerGrad)" strokeWidth="6" fill="transparent"
@@ -103,16 +103,16 @@ export default function PomodoroView({ subjects, sessions, onAddSession }) {
           </svg>
           <div className="text-center">
             <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">{stateLabel[timerState]}</p>
-            <div className={`font-mono text-6xl font-black tracking-tight select-none ${stateColors[timerState] || 'text-white'} ${isRunning && isFocusMode ? 'timer-glow' : ''} ${isRunning && !isFocusMode ? 'timer-glow-green' : ''}`}>
+            <div className={`font-mono text-5xl md:text-6xl font-black tracking-tight select-none ${stateColors[timerState] || 'text-white'} ${isRunning && isFocusMode ? 'timer-glow' : ''} ${isRunning && !isFocusMode ? 'timer-glow-green' : ''}`}>
               {mins}:{secs}
             </div>
           </div>
         </div>
 
         {/* Session Dots */}
-        <div className="relative z-10 flex gap-2 mb-8">
+        <div className="relative z-10 flex gap-2 mb-6 md:mb-8">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className={`w-2 h-2 rounded-full transition-all duration-500 ${i < (sessionCount % 4) ? 'bg-violet-500 glow-violet' : 'bg-white/10'}`} />
+            <div key={i} className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-500 ${i < (sessionCount % 4) ? 'bg-violet-500 glow-violet' : 'bg-white/10'}`} />
           ))}
         </div>
 

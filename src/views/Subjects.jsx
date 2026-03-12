@@ -68,36 +68,36 @@ export default function SubjectsView({ subjects, cards, onToggleTopic }) {
 
               {/* Expanded */}
               {isExpanded && (
-                <div className="border-t border-white/[0.05] p-5 grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-top-2 duration-200">
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Topics Checklist</h4>
+                <div className="border-t border-white/[0.05] p-4 md:p-5 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 animate-in slide-in-from-top-2 duration-200">
+                  <div className="min-w-0 overflow-hidden">
+                    <h4 className="text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-widest mb-3 md:mb-4">Topics Checklist</h4>
                     <div className="space-y-2.5">
                       {sub.topics?.map(topic => (
-                        <div key={topic.id} className="flex items-center gap-3 cursor-pointer group" onClick={e => { e.stopPropagation(); onToggleTopic(topic.id, topic.done); }}>
-                          <div className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200 ${topic.done ? 'btn-gradient border-transparent' : 'border-white/10 group-hover:border-violet-500/50'}`}>
-                            {topic.done && <CheckCircle className="w-3 h-3 text-white" />}
+                        <div key={topic.id} className="flex items-start gap-2 md:gap-3 cursor-pointer group" onClick={e => { e.stopPropagation(); onToggleTopic(topic.id, topic.done); }}>
+                          <div className={`mt-0.5 w-4 h-4 md:w-5 md:h-5 rounded-md md:rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200 ${topic.done ? 'btn-gradient border-transparent' : 'border-white/10 group-hover:border-violet-500/50'}`}>
+                            {topic.done && <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />}
                           </div>
-                          <span className={`text-sm transition-colors ${topic.done ? 'text-gray-700 line-through' : 'text-gray-300 group-hover:text-white'}`}>{topic.label}</span>
+                          <span className={`text-xs md:text-sm flex-1 leading-snug transition-colors ${topic.done ? 'text-gray-700 line-through' : 'text-gray-300 group-hover:text-white'}`}>{topic.label}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Stats</h4>
-                    <div className="grid grid-cols-2 gap-3">
+                    <h4 className="text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-widest mb-3 md:mb-4 mt-2 md:mt-0">Stats</h4>
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
                       {[
-                        { icon: <Clock className="w-5 h-5" />, val: sub.pomodoroCount, label: 'Pomodoros' },
-                        { icon: <Layers className="w-5 h-5" />, val: cardCount, label: 'Flashcards' },
+                        { icon: <Clock className="w-4 h-4 md:w-5 md:h-5" />, val: sub.pomodoroCount, label: 'Pomodoros' },
+                        { icon: <Layers className="w-4 h-4 md:w-5 md:h-5" />, val: cardCount, label: 'Flashcards' },
                       ].map((s, i) => (
-                        <div key={i} className="rounded-xl p-4 text-center" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.12)' }}>
-                          <div className="text-violet-400 flex justify-center mb-2">{s.icon}</div>
-                          <p className="text-2xl font-black text-white mb-0.5">{s.val}</p>
-                          <p className="text-xs text-gray-600">{s.label}</p>
+                        <div key={i} className="rounded-xl p-3 md:p-4 text-center" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.12)' }}>
+                          <div className="text-violet-400 flex justify-center mb-1.5 md:mb-2">{s.icon}</div>
+                          <p className="text-xl md:text-2xl font-black text-white mb-0.5">{s.val}</p>
+                          <p className="text-[10px] md:text-xs text-gray-600">{s.label}</p>
                         </div>
                       ))}
-                      <div className="col-span-2 rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p className="text-xs text-gray-600 mb-1">Topics Complete</p>
-                        <p className="text-xl font-black text-white">{doneCount}<span className="text-gray-700 font-light"> / {sub.topics?.length || 0}</span></p>
+                      <div className="col-span-2 rounded-xl p-3 md:p-4 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-1">Topics Complete</p>
+                        <p className="text-lg md:text-xl font-black text-white">{doneCount}<span className="text-gray-700 font-light"> / {sub.topics?.length || 0}</span></p>
                       </div>
                     </div>
                   </div>

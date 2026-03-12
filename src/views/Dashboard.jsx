@@ -28,38 +28,38 @@ export default function DashboardView({ subjects, sessions, streak, setActiveTab
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         {[
-          { icon: <Flame className="w-5 h-5 text-orange-400" />, label: 'Study Streak', value: `${streak}d`, glow: 'glow-orange', gradient: 'from-orange-500/10 to-red-500/10', border: 'border-orange-500/20' },
-          { icon: <CheckCircle className="w-5 h-5 text-emerald-400" />, label: 'Pomodoros Today', value: todayPomodoros, glow: '', gradient: 'from-emerald-500/10 to-cyan-500/10', border: 'border-emerald-500/20' },
-          { icon: <Clock className="w-5 h-5 text-violet-400" />, label: 'Focus Time', value: `${totalFocusMin}m`, glow: '', gradient: 'from-violet-500/10 to-blue-500/10', border: 'border-violet-500/20' },
+          { icon: <Flame className="w-5 h-5 md:w-5 md:h-5 text-orange-400" />, label: 'Study Streak', value: `${streak}d`, glow: 'glow-orange', gradient: 'from-orange-500/10 to-red-500/10', border: 'border-orange-500/20' },
+          { icon: <CheckCircle className="w-5 h-5 md:w-5 md:h-5 text-emerald-400" />, label: 'Pomodoros', value: todayPomodoros, glow: '', gradient: 'from-emerald-500/10 to-cyan-500/10', border: 'border-emerald-500/20' },
+          { icon: <Clock className="w-5 h-5 md:w-5 md:h-5 text-violet-400" />, label: 'Focus Time', value: `${totalFocusMin}m`, glow: '', gradient: 'from-violet-500/10 to-blue-500/10', border: 'border-violet-500/20' },
         ].map((stat, i) => (
-          <div key={i} className={`glass card-hover rounded-2xl p-5 border bg-gradient-to-br ${stat.gradient} ${stat.border}`}>
-            <div className="flex items-center gap-2.5 mb-3">{stat.icon}<span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</span></div>
-            <p className="text-3xl font-black text-white">{stat.value}</p>
+          <div key={i} className={`glass card-hover rounded-2xl p-4 md:p-5 border bg-gradient-to-br ${stat.gradient} ${stat.border}`}>
+            <div className="flex items-center gap-2 md:gap-2.5 mb-2 md:mb-3">{stat.icon}<span className="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.label}</span></div>
+            <p className="text-2xl md:text-3xl font-black text-white">{stat.value}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Subject Progress */}
-        <div className="lg:col-span-2 glass rounded-2xl p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-white">Subject Progress</h2>
+        <div className="lg:col-span-2 glass rounded-2xl p-4 md:p-6">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
+            <h2 className="text-base md:text-lg font-bold text-white">Subject Progress</h2>
             <button onClick={() => setActiveTab('Subjects')} className="text-xs text-violet-400 hover:text-violet-300 font-semibold transition-colors">View all →</button>
           </div>
-          <div className="space-y-5">
+          <div className="space-y-4 md:space-y-5">
             {subjects.length === 0 && <p className="text-gray-600 text-sm text-center py-6">Subjects loading…</p>}
             {subjects.map((sub, i) => {
               const c = SUBJECT_COLORS[sub.color] || SUBJECT_COLORS.blue;
               return (
                 <div key={sub.id}>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="font-semibold text-gray-300">{sub.name} <span className="text-gray-600 text-xs ml-1">({sub.short_name})</span></span>
-                    <span className={`font-bold ${c.text}`}>{sub.progress}%</span>
+                  <div className="flex justify-between text-xs md:text-sm mb-1.5 md:mb-2">
+                    <span className="font-semibold text-gray-300 truncate pr-2">{sub.name} <span className="text-gray-600 text-[10px] md:text-xs ml-0.5 md:ml-1 hidden sm:inline">({sub.short_name})</span></span>
+                    <span className={`font-bold shrink-0 ${c.text}`}>{sub.progress}%</span>
                   </div>
-                  <div className="w-full bg-white/[0.05] rounded-full h-2 overflow-hidden">
-                    <div className={`h-2 rounded-full ${GRAD[i % GRAD.length]} transition-all duration-1000 ease-out`} style={{ width: `${sub.progress}%` }} />
+                  <div className="w-full bg-white/[0.05] rounded-full h-1.5 md:h-2 overflow-hidden">
+                    <div className={`h-1.5 md:h-2 rounded-full ${GRAD[i % GRAD.length]} transition-all duration-1000 ease-out`} style={{ width: `${sub.progress}%` }} />
                   </div>
                 </div>
               );
