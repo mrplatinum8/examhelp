@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, LogOut, Zap, Menu, X, ChevronLeft, ChevronRight, CalendarCheck } from 'lucide-react';
+import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, LogOut, Zap, Menu, X, ChevronLeft, ChevronRight, CalendarCheck, CalendarClock, GraduationCap } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { computeStreak, computeHeatmap, SUBJECTS_SEED } from './lib/helpers';
 import AuthGate from './components/AuthGate';
@@ -11,10 +11,12 @@ import FlashcardsView from './views/Flashcards';
 import AnalyticsView from './views/Analytics';
 import HeatmapView from './views/Heatmap';
 import RevisionScheduleView from './views/RevisionSchedule';
+import DailyScheduleView from './views/DailySchedule';
+import ExamTimetableView from './views/ExamTimetable';
 
-const TABS = ['Dashboard', 'Subjects', 'Pomodoro', 'Calendar', 'Flashcards', 'Revision', 'Analytics', 'Heatmap'];
-const TAB_ICONS = { Dashboard: Home, Subjects: BookOpen, Pomodoro: Clock, Calendar: CalendarIcon, Flashcards: Layers, Revision: CalendarCheck, Analytics: BarChart2, Heatmap: Activity };
-const VIEWS = { Dashboard: DashboardView, Subjects: SubjectsView, Pomodoro: PomodoroView, Calendar: CalendarView, Flashcards: FlashcardsView, Revision: RevisionScheduleView, Analytics: AnalyticsView, Heatmap: HeatmapView };
+const TABS = ['Dashboard', 'Subjects', 'Pomodoro', 'Calendar', 'Flashcards', 'Revision', 'Schedule', 'Exams', 'Analytics', 'Heatmap'];
+const TAB_ICONS = { Dashboard: Home, Subjects: BookOpen, Pomodoro: Clock, Calendar: CalendarIcon, Flashcards: Layers, Revision: CalendarCheck, Schedule: CalendarClock, Exams: GraduationCap, Analytics: BarChart2, Heatmap: Activity };
+const VIEWS = { Dashboard: DashboardView, Subjects: SubjectsView, Pomodoro: PomodoroView, Calendar: CalendarView, Flashcards: FlashcardsView, Revision: RevisionScheduleView, Schedule: DailyScheduleView, Exams: ExamTimetableView, Analytics: AnalyticsView, Heatmap: HeatmapView };
 
 async function seedUser() {
   for (let i = 0; i < SUBJECTS_SEED.length; i++) {
@@ -38,6 +40,8 @@ export default function App() {
   const [sessions, setSessions] = useState([]);
   const [cards, setCards] = useState([]);
   const [studyLogs, setStudyLogs] = useState([]);
+  const [schedule, setSchedule] = useState([]);
+  const [examTimetable, setExamTimetable] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -155,12 +159,24 @@ export default function App() {
       setStudyLogs(data || []);
     } catch { setStudyLogs([]); }
   }, []);
+  const loadSchedule = useCallback(async () => {
+    try {
+      const { data } = await supabase.from('daily_schedule').select('*').order('start_time');
+      setSchedule(data || []);
+    } catch { setSchedule([]); }
+  }, []);
+  const loadExamTimetable = useCallback(async () => {
+    try {
+      const { data } = await supabase.from('exam_timetable').select('*').order('exam_date');
+      setExamTimetable(data || []);
+    } catch { setExamTimetable([]); }
+  }, []);
 
   const handleSignOut = useCallback(async () => {
     loadedForRef.current = null;
     seedingRef.current = false;
     setSession(null);
-    setSubjects([]); setSessions([]); setCards([]); setStudyLogs([]);
+    setSubjects([]); setSessions([]); setCards([]); setStudyLogs([]); setSchedule([]); setExamTimetable([]);
     supabase.auth.signOut().catch(() => {});
   }, []);
 
@@ -172,7 +188,7 @@ export default function App() {
     loadedForRef.current = uid;
     setDataLoading(true);
     const timeout = setTimeout(() => setDataLoading(false), 15000);
-    Promise.all([loadSubjects(), loadSessions(), loadCards(), loadStudyLogs()])
+    Promise.all([loadSubjects(), loadSessions(), loadCards(), loadStudyLogs(), loadSchedule(), loadExamTimetable()])
       .finally(() => { setDataLoading(false); clearTimeout(timeout); });
     return () => clearTimeout(timeout);
   }, [session]);
@@ -220,6 +236,34 @@ export default function App() {
     await loadSubjects(); showToast('Exam date updated! 📌');
   }, [loadSubjects, showToast]);
 
+  // Schedule CRUD
+  const onAddSlot = useCallback(async (data) => {
+    await supabase.from('daily_schedule').insert(data);
+    await loadSchedule(); showToast('Slot added! 📅');
+  }, [loadSchedule, showToast]);
+  const onUpdateSlot = useCallback(async (id, data) => {
+    await supabase.from('daily_schedule').update(data).eq('id', id);
+    await loadSchedule(); showToast('Slot updated!');
+  }, [loadSchedule, showToast]);
+  const onDeleteSlot = useCallback(async (id) => {
+    await supabase.from('daily_schedule').delete().eq('id', id);
+    await loadSchedule(); showToast('Slot deleted.');
+  }, [loadSchedule, showToast]);
+
+  // Exam Timetable CRUD
+  const onAddExam = useCallback(async (data) => {
+    await supabase.from('exam_timetable').insert(data);
+    await loadExamTimetable(); showToast('Exam added! 🎓');
+  }, [loadExamTimetable, showToast]);
+  const onUpdateExam = useCallback(async (id, data) => {
+    await supabase.from('exam_timetable').update(data).eq('id', id);
+    await loadExamTimetable(); showToast('Exam updated!');
+  }, [loadExamTimetable, showToast]);
+  const onDeleteExam = useCallback(async (id) => {
+    await supabase.from('exam_timetable').delete().eq('id', id);
+    await loadExamTimetable(); showToast('Exam deleted.');
+  }, [loadExamTimetable, showToast]);
+
   if (authLoading) return (
     <div className="min-h-screen bg-[#07071a] mesh-bg flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -235,8 +279,11 @@ export default function App() {
   const ActiveView = VIEWS[activeTab] || DashboardView;
   const viewProps = {
     subjects: subjectsWithCounts, sessions, cards, studyLogs, streak, heatmapData,
+    schedule, exams: examTimetable,
     setActiveTab, showToast, onToggleTopic, onAddSession, onAddCard, onRateCard,
     onDeleteCard, onAddStudyLog, onUpdateExamDate,
+    onAddSlot, onUpdateSlot, onDeleteSlot,
+    onAddExam, onUpdateExam, onDeleteExam,
   };
 
   return (
