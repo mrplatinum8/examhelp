@@ -6,7 +6,7 @@
 
 ## 📖 Overview
 
-**ExamFocus** is a dark-themed, glassmorphism-styled study companion designed to help students track their exam preparation progress. It combines Pomodoro-style focus sessions, spaced-repetition flashcards, a smart revision schedule, and study analytics — all synced to a per-user Supabase backend with Row Level Security.
+**ExamFocus** is a dark-themed, glassmorphism-styled study companion designed to help students track their exam preparation progress. It combines Pomodoro-style focus sessions, spaced-repetition flashcards, a smart revision schedule, a daily class timetable, a detailed exam timetable, and study analytics — all synced to a per-user Supabase backend with Row Level Security.
 
 The app auto-seeds subjects and topics on first login so it's ready to use immediately with zero manual setup.
 
@@ -21,7 +21,9 @@ The app auto-seeds subjects and topics on first login so it's ready to use immed
 | **Pomodoro Timer** | 25-minute focus sessions linked to a subject; sessions are recorded and feed into streak & heatmap calculations |
 | **Calendar** | Visual study log calendar; log ad-hoc study sessions by subject, date, and duration |
 | **Flashcards** | Add/review flashcards with a built-in spaced-repetition algorithm (SM-2 style — Easy/Medium/Hard ratings adjust interval and ease factor); keyboard shortcut support (Space to flip, 1/2/3 to rate) |
-| **Revision Schedule** | Smart schedule showing recommended revision days per subject relative to exam date |
+| **Revision Schedule** | Auto-generated day-by-day study plan that distributes unchecked topics across remaining days before each exam, prioritizing nearest deadlines |
+| **Daily Schedule** | Recurring weekly class timetable with day tabs (Mon–Sun); add, edit, and delete time-blocked slots linked to subjects |
+| **Exam Timetable** | Detailed exam event cards showing date, time, venue, and notes with traffic-light urgency; full CRUD support |
 | **Analytics** | Charts (via Recharts) showing Pomodoro counts per subject and study time distribution |
 | **Heatmap** | GitHub-style contribution heatmap of daily study activity |
 | **PWA / Offline** | Installable as a standalone app; service worker caches assets and Google Fonts for offline access |
@@ -46,15 +48,18 @@ examhelp/
 │   │   ├── Calendar.jsx     # Study log calendar
 │   │   ├── Flashcards.jsx   # Spaced-repetition flashcard review
 │   │   ├── RevisionSchedule.jsx  # Smart revision planner
+│   │   ├── DailySchedule.jsx    # Recurring weekly timetable
+│   │   ├── ExamTimetable.jsx    # Detailed exam events
 │   │   ├── Analytics.jsx    # Charts & stats
 │   │   └── Heatmap.jsx      # Activity heatmap
 │   ├── App.jsx              # Root component — auth, data loading, navigation, toast system
 │   ├── App.css              # Component-level styles
 │   ├── index.css            # Global design tokens, glass/gradient utilities
-│   └── main.jsx             # React entry point
+│   └── main.jsx             # React entry point with ErrorBoundary
 ├── supabase/
 │   └── schema.sql           # Database schema + RLS policies (safe to re-run)
 ├── seed_flashcards.cjs      # Node script to bulk-insert flashcards via Supabase API
+├── seed_schedule.cjs        # Node script to seed daily schedule + exam timetable
 ├── vite.config.js           # Vite + TailwindCSS v4 + PWA configuration
 ├── .env.local               # Environment variables (not committed)
 └── package.json
@@ -73,6 +78,8 @@ All tables are user-scoped via `user_id` with Row Level Security enabled.
 | `pomodoro_sessions` | `id`, `user_id`, `subject_id`, `duration_minutes`, `started_at` |
 | `flashcards` | `id`, `user_id`, `subject_id`, `question`, `answer`, `interval_days`, `ease_factor`, `next_review` |
 | `study_logs` | `id`, `user_id`, `subject_id`, `date`, `duration_minutes`, `notes` |
+| `daily_schedule` | `id`, `user_id`, `day_of_week`, `start_time`, `end_time`, `title`, `subject_id`, `color` |
+| `exam_timetable` | `id`, `user_id`, `subject_id`, `exam_date`, `start_time`, `end_time`, `venue`, `notes` |
 
 ---
 
@@ -86,7 +93,7 @@ All tables are user-scoped via `user_id` with Row Level Security enabled.
 ### 1. Clone & Install
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/mrplatinum8/examhelp.git
 cd examhelp
 npm install
 ```
@@ -116,6 +123,13 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 On first login, the app **automatically seeds** all 8 subjects with their topics — no manual data entry required.
 
+### 5. Deploy to Vercel
+
+1. Push to GitHub
+2. Import the repo in [Vercel](https://vercel.com)
+3. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Environment Variables
+4. Deploy — the app will be live with full PWA support
+
 ---
 
 ## 🎓 Pre-seeded Subjects
@@ -126,7 +140,7 @@ The app ships with the following subjects pre-configured (edit in `src/lib/helpe
 |---|---|---|
 | ODE | Ordinary Differential Equations | — |
 | NTPD | Numerical Techniques & Probability Distributions | Apr 20, 2026 |
-| ADE | Analog & Digital Electronics | — |
+| ADE | Analog & Digital Electronics | Jun 4, 2026 |
 | SE | Software Engineering | Apr 24, 2026 |
 | WT | Web Technologies | Apr 21, 2026 |
 | CD | Compiler Design | Apr 23, 2026 |
@@ -158,6 +172,7 @@ In the **Flashcards** view:
 | Charts | [Recharts](https://recharts.org/) |
 | Icons | [Lucide React](https://lucide.dev/) |
 | PWA | [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) + Workbox |
+| Error Handling | [react-error-boundary](https://github.com/bvaughn/react-error-boundary) |
 | Testing | [Playwright](https://playwright.dev/) |
 
 ---
