@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@react-navigation/stack": "^7.8.5",
     "@supabase/supabase-js": "^2.99.1",
     "@tailwindcss/vite": "^4.2.1",
     "lucide-react": "^0.577.0",
@@ -18,8 +17,6 @@
     "react-dom": "19.2.0",
     "react-error-boundary": "^6.1.1",
     "react-is": "^19.2.4",
-    "react-native-chart-kit": "^6.12.0",
-    "react-native-url-polyfill": "^3.0.0",
     "react-router-dom": "^7.13.2",
     "recharts": "^3.8.0",
     "tailwindcss": "^4.2.1"
