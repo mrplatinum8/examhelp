@@ -1,10 +1,15 @@
 import React from 'react';
-import { Flame, CheckCircle, GraduationCap, ArrowRight, Clock, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Flame, CheckCircle, GraduationCap, ArrowRight, Clock, TrendingUp, PlaySquare, CalendarPlus, Layers } from 'lucide-react';
 import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
 const GRAD = ['progress-gradient', 'progress-gradient-orange', 'progress-gradient-green', 'progress-gradient-pink', 'progress-gradient', 'progress-gradient-orange', 'progress-gradient-green', 'progress-gradient-pink'];
 
-export default function DashboardView({ subjects, sessions, streak, setActiveTab }) {
+export default function DashboardView() {
+  const { subjects, sessions, streak } = useData();
+  const navigate = useNavigate();
+
   const todayStr = new Date().toISOString().split('T')[0];
   const todayPomodoros = sessions.filter(s => s.started_at?.startsWith(todayStr)).length;
   const totalFocusMin = sessions.filter(s => s.started_at?.startsWith(todayStr)).reduce((a, s) => a + (s.duration_minutes || 25), 0);
@@ -24,6 +29,17 @@ export default function DashboardView({ subjects, sessions, streak, setActiveTab
             <span className="text-white">.</span>
           </h1>
           <p className="text-gray-500 mt-1.5 text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+        </div>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button onClick={() => navigate('/pomodoro')} className="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-xs font-bold btn-gradient text-white flex items-center justify-center gap-2 hover:scale-105 transition-transform">
+            <PlaySquare className="w-4 h-4" /> Start Focus
+          </button>
+          <button onClick={() => navigate('/calendar')} className="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-xs font-bold glass hover:bg-white/[0.08] text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2">
+            <CalendarPlus className="w-4 h-4" /> Log Study
+          </button>
+          <button onClick={() => navigate('/flashcards')} className="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-xs font-bold glass hover:bg-white/[0.08] text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2">
+            <Layers className="w-4 h-4" /> Flashcards
+          </button>
         </div>
       </div>
 
@@ -46,7 +62,7 @@ export default function DashboardView({ subjects, sessions, streak, setActiveTab
         <div className="lg:col-span-2 glass rounded-2xl p-4 md:p-6">
           <div className="flex justify-between items-center mb-4 md:mb-6">
             <h2 className="text-base md:text-lg font-bold text-white">Subject Progress</h2>
-            <button onClick={() => setActiveTab('Subjects')} className="text-xs text-violet-400 hover:text-violet-300 font-semibold transition-colors">View all →</button>
+            <button onClick={() => navigate('/subjects')} className="text-xs text-violet-400 hover:text-violet-300 font-semibold transition-colors">View all →</button>
           </div>
           <div className="space-y-4 md:space-y-5">
             {subjects.length === 0 && <p className="text-gray-600 text-sm text-center py-6">Subjects loading…</p>}
@@ -70,7 +86,7 @@ export default function DashboardView({ subjects, sessions, streak, setActiveTab
         {/* Right col */}
         <div className="space-y-5">
           {/* Mission */}
-          <div onClick={() => setActiveTab('Pomodoro')}
+          <div onClick={() => navigate('/pomodoro')}
             className="glass card-hover rounded-2xl p-5 border border-violet-500/15 cursor-pointer relative overflow-hidden group transition-all">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-blue-500/5 group-hover:from-violet-500/10 group-hover:to-blue-500/10 transition-all" />
             <div className="relative">

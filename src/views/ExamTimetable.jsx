@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, X, Trash2, Edit3, MapPin, Clock, FileText, GraduationCap } from 'lucide-react';
-import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
+import { SUBJECT_COLORS, daysUntil, formatTime12 } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
-function formatTime12(t) {
-  if (!t) return '—';
-  const [h, m] = t.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
-}
 
-export default function ExamTimetableView({ subjects, exams, onAddExam, onUpdateExam, onDeleteExam }) {
+export default function ExamTimetableView() {
+  const { subjects, exams, onAddExam, onUpdateExam, onDeleteExam } = useData();
   const [showModal, setShowModal] = useState(false);
   const [editExam, setEditExam] = useState(null);
 
@@ -155,7 +150,7 @@ export default function ExamTimetableView({ subjects, exams, onAddExam, onUpdate
                       className="p-1.5 rounded-lg hover:bg-white/5 text-gray-600 hover:text-white transition-colors">
                       <Edit3 className="w-3 h-3" />
                     </button>
-                    <button onClick={() => onDeleteExam(exam.id)}
+                    <button onClick={() => { if (window.confirm('Delete this exam?')) onDeleteExam(exam.id); }}
                       className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-600 hover:text-red-400 transition-colors">
                       <Trash2 className="w-3 h-3" />
                     </button>

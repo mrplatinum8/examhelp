@@ -1,14 +1,20 @@
 // Color class maps (full strings required for Tailwind JIT)
 export const SUBJECT_COLORS = {
-  blue:    { bg: 'bg-blue-500',    text: 'text-blue-400',    border: 'border-blue-500/30',    glow: 'shadow-blue-500/20' },
-  amber:   { bg: 'bg-amber-500',   text: 'text-amber-400',   border: 'border-amber-500/30',   glow: 'shadow-amber-500/20' },
-  emerald: { bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30', glow: 'shadow-emerald-500/20' },
-  purple:  { bg: 'bg-purple-500',  text: 'text-purple-400',  border: 'border-purple-500/30',  glow: 'shadow-purple-500/20' },
-  pink:    { bg: 'bg-pink-500',    text: 'text-pink-400',    border: 'border-pink-500/30',    glow: 'shadow-pink-500/20' },
-  red:     { bg: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/30',     glow: 'shadow-red-500/20' },
-  cyan:    { bg: 'bg-cyan-500',    text: 'text-cyan-400',    border: 'border-cyan-500/30',    glow: 'shadow-cyan-500/20' },
-  indigo:  { bg: 'bg-indigo-500',  text: 'text-indigo-400',  border: 'border-indigo-500/30',  glow: 'shadow-indigo-500/20' },
+  blue:    { bg: 'bg-blue-500',    text: 'text-blue-400',    border: 'border-blue-500/30',    glow: 'shadow-blue-500/20',    hex: '#3b82f6' },
+  amber:   { bg: 'bg-amber-500',   text: 'text-amber-400',   border: 'border-amber-500/30',   glow: 'shadow-amber-500/20',   hex: '#f59e0b' },
+  emerald: { bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30', glow: 'shadow-emerald-500/20', hex: '#10b981' },
+  purple:  { bg: 'bg-purple-500',  text: 'text-purple-400',  border: 'border-purple-500/30',  glow: 'shadow-purple-500/20',  hex: '#a855f7' },
+  pink:    { bg: 'bg-pink-500',    text: 'text-pink-400',    border: 'border-pink-500/30',    glow: 'shadow-pink-500/20',    hex: '#ec4899' },
+  red:     { bg: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/30',     glow: 'shadow-red-500/20',     hex: '#ef4444' },
+  cyan:    { bg: 'bg-cyan-500',    text: 'text-cyan-400',    border: 'border-cyan-500/30',    glow: 'shadow-cyan-500/20',    hex: '#06b6d4' },
+  indigo:  { bg: 'bg-indigo-500',  text: 'text-indigo-400',  border: 'border-indigo-500/30',  glow: 'shadow-indigo-500/20',  hex: '#6366f1' },
+  violet:  { bg: 'bg-violet-500',  text: 'text-violet-400',  border: 'border-violet-500/30',  glow: 'shadow-violet-500/20',  hex: '#7c3aed' },
 };
+
+/** Get hex color for a subject color key. Falls back to violet. */
+export function getSubjectHex(colorKey) {
+  return (SUBJECT_COLORS[colorKey] || SUBJECT_COLORS.violet).hex;
+}
 
 export const SUBJECTS_SEED = [
   { name: 'Ordinary Differential Equations', short_name: 'ODE', color: 'blue', exam_date: null,
@@ -29,11 +35,24 @@ export const SUBJECTS_SEED = [
     topics: ['Management Theories (Taylor, Fayol)', 'Demand Forecasting Methods', 'Break-Even Analysis', 'Financial Statements Ratio Analysis'] },
 ];
 
+/**
+ * Compute study streak. Counts consecutive days with sessions,
+ * starting from today OR yesterday (so the streak doesn't break
+ * if the user hasn't studied yet today).
+ */
 export function computeStreak(sessions) {
   if (!sessions.length) return 0;
   const days = [...new Set(sessions.map(s => s.started_at.split('T')[0]))].sort().reverse();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+  // Start counting from today, or from yesterday if no session today
   let streak = 0;
   const cursor = new Date();
+  if (days[0] !== todayStr && days[0] !== yesterdayStr) return 0;
+  if (days[0] === yesterdayStr) cursor.setDate(cursor.getDate() - 1);
+
   for (const day of days) {
     const check = cursor.toISOString().split('T')[0];
     if (day === check) { streak++; cursor.setDate(cursor.getDate() - 1); }
@@ -53,4 +72,13 @@ export function daysUntil(dateStr) {
   if (!dateStr) return null;
   const diff = new Date(dateStr) - new Date(new Date().toDateString());
   return Math.ceil(diff / 86400000);
+}
+
+/** Shared time formatter: 24h → 12h AM/PM */
+export function formatTime12(t) {
+  if (!t) return '—';
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
 }

@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, SkipForward, ChevronDown, Music2 } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Play, Pause, RotateCcw, SkipForward, ChevronDown, Music2, Settings, Bell, BellOff } from 'lucide-react';
 import { SUBJECT_COLORS } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
 const STATES = { IDLE: 'IDLE', FOCUS: 'FOCUS', SHORT: 'SHORT', LONG: 'LONG' };
-const DURATIONS = { FOCUS: 25 * 60, SHORT: 5 * 60, LONG: 15 * 60 };
+const DEFAULT_DURATIONS = { FOCUS: 25, SHORT: 5, LONG: 15 };
+const PRESETS = [
+  { label: '25/5/15', focus: 25, short: 5, long: 15 },
+  { label: '50/10/20', focus: 50, short: 10, long: 20 },
+  { label: '45/15/30', focus: 45, short: 15, long: 30 },
+];
 const PLAYLISTS = [
   { name: 'LoFi Hip Hop', url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', color: 'text-violet-400' },
   { name: 'Brown Noise', url: 'https://www.youtube.com/watch?v=RqzGzwTY-6w', color: 'text-blue-400' },
@@ -11,25 +17,90 @@ const PLAYLISTS = [
   { name: 'Classical', url: 'https://www.youtube.com/watch?v=4To8E7s1TG4', color: 'text-pink-400' },
 ];
 
-export default function PomodoroView({ subjects, sessions, onAddSession }) {
-  const [timeLeft, setTimeLeft] = useState(DURATIONS.FOCUS);
+/** Try to show a browser notification */
+function notify(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/icon-192.png' });
+  }
+}
+
+/** Persist timer state to sessionStorage */
+function saveTimerState(state) {
+  try { sessionStorage.setItem('ef_timer', JSON.stringify(state)); } catch {}
+}
+function loadTimerState() {
+  try {
+    const raw = sessionStorage.getItem('ef_timer');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+export default function PomodoroView() {
+  const { subjects, sessions, onAddSession } = useData();
+
+  // Customizable durations (in minutes)
+  const [durations, setDurations] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ef_pomodoro_durations');
+      return saved ? JSON.parse(saved) : DEFAULT_DURATIONS;
+    } catch { return DEFAULT_DURATIONS; }
+  });
+  const [showSettings, setShowSettings] = useState(false);
+  const [notificationsOn, setNotificationsOn] = useState(() => {
+    return 'Notification' in window && Notification.permission === 'granted';
+  });
+
+  // Timer state — restore from sessionStorage on mount
+  const [timeLeft, setTimeLeft] = useState(durations.FOCUS * 60);
   const [timerState, setTimerState] = useState(STATES.IDLE);
   const [sessionCount, setSessionCount] = useState(0);
   const [selId, setSelId] = useState('');
   const [customLink, setCustomLink] = useState('');
   const intervalRef = useRef(null);
+  const restoredRef = useRef(false);
+
   const todayStr = new Date().toISOString().split('T')[0];
   const todaySessions = sessions.filter(s => s.started_at?.startsWith(todayStr));
 
+  // Restore timer from sessionStorage on first mount
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const saved = loadTimerState();
+    if (saved && saved.timerState !== STATES.IDLE) {
+      const elapsed = Math.floor((Date.now() - saved.savedAt) / 1000);
+      const remaining = Math.max(0, saved.timeLeft - elapsed);
+      setTimerState(saved.timerState);
+      setTimeLeft(remaining);
+      setSessionCount(saved.sessionCount || 0);
+      if (saved.selId) setSelId(saved.selId);
+      if (remaining > 0) startTicking();
+    }
+  }, []);
+
   useEffect(() => { if (subjects.length && !selId) setSelId(subjects[0].id); }, [subjects]);
 
+  // Persist timer state whenever it changes
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    saveTimerState({
+      timerState, timeLeft, sessionCount, selId,
+      savedAt: Date.now(),
+    });
+  }, [timerState, timeLeft, sessionCount, selId]);
+
+  // Save duration preferences
+  useEffect(() => {
+    localStorage.setItem('ef_pomodoro_durations', JSON.stringify(durations));
+  }, [durations]);
+
   const clearT = () => clearInterval(intervalRef.current);
-  const startTicking = () => {
+  const startTicking = useCallback(() => {
     clearT();
     intervalRef.current = setInterval(() => setTimeLeft(p => p > 0 ? p - 1 : 0), 1000);
-  };
+  }, []);
   const handlePause = () => { clearT(); setTimerState(STATES.IDLE); };
-  const handleReset = () => { clearT(); setTimerState(STATES.IDLE); setTimeLeft(DURATIONS.FOCUS); };
+  const handleReset = () => { clearT(); setTimerState(STATES.IDLE); setTimeLeft(durations.FOCUS * 60); };
 
   const handleSkip = async () => {
     clearT();
@@ -40,10 +111,12 @@ export default function PomodoroView({ subjects, sessions, onAddSession }) {
       setSessionCount(next);
       const isLong = next % 4 === 0;
       setTimerState(isLong ? STATES.LONG : STATES.SHORT);
-      setTimeLeft(isLong ? DURATIONS.LONG : DURATIONS.SHORT);
+      setTimeLeft(isLong ? durations.LONG * 60 : durations.SHORT * 60);
+      notify('Break Time! ☕', isLong ? `Long break — ${durations.LONG} minutes` : `Short break — ${durations.SHORT} minutes`);
     } else {
       setTimerState(STATES.FOCUS);
-      setTimeLeft(DURATIONS.FOCUS);
+      setTimeLeft(durations.FOCUS * 60);
+      notify('Focus Time! 🎯', `${durations.FOCUS} minutes of deep focus`);
     }
     startTicking();
   };
@@ -52,13 +125,20 @@ export default function PomodoroView({ subjects, sessions, onAddSession }) {
   useEffect(() => { if (timeLeft === 0 && timerState !== STATES.IDLE) handleSkip(); }, [timeLeft]);
   useEffect(() => () => clearT(), []);
 
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const perm = await Notification.requestPermission();
+      setNotificationsOn(perm === 'granted');
+    }
+  };
+
   const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   const secs = String(timeLeft % 60).padStart(2, '0');
   const isRunning = timerState !== STATES.IDLE;
   const isFocusMode = timerState === STATES.IDLE || timerState === STATES.FOCUS;
   const curSub = subjects.find(s => s.id === selId);
 
-  const totalSeconds = isFocusMode ? DURATIONS.FOCUS : timerState === STATES.SHORT ? DURATIONS.SHORT : DURATIONS.LONG;
+  const totalSeconds = isFocusMode ? durations.FOCUS * 60 : timerState === STATES.SHORT ? durations.SHORT * 60 : durations.LONG * 60;
   const pct = ((totalSeconds - timeLeft) / totalSeconds) * 100;
   const r = 110; const circ = 2 * Math.PI * r;
   const stateColors = { [STATES.IDLE]: 'text-white', [STATES.FOCUS]: 'text-white', [STATES.SHORT]: 'text-emerald-400', [STATES.LONG]: 'text-blue-400' };
@@ -73,6 +153,51 @@ export default function PomodoroView({ subjects, sessions, onAddSession }) {
           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full opacity-30 transition-colors duration-1000`}
                style={{ background: isFocusMode ? 'radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)' }} />
         </div>
+
+        {/* Top bar: Settings + Notifications */}
+        <div className="absolute top-4 right-4 z-20 flex gap-2">
+          <button onClick={requestNotificationPermission}
+            className="p-2 rounded-lg glass hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors"
+            title={notificationsOn ? 'Notifications on' : 'Enable notifications'}>
+            {notificationsOn ? <Bell className="w-4 h-4 text-emerald-400" /> : <BellOff className="w-4 h-4" />}
+          </button>
+          <button onClick={() => setShowSettings(s => !s)}
+            className="p-2 rounded-lg glass hover:bg-white/[0.08] text-gray-500 hover:text-white transition-colors"
+            title="Timer settings">
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Settings dropdown */}
+        {showSettings && (
+          <div className="absolute top-14 right-4 z-30 w-56 rounded-2xl p-4 shadow-2xl" style={{ background: 'rgba(12,12,35,0.97)', border: '1px solid rgba(139,92,246,0.2)' }}>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Timer Presets</p>
+            <div className="space-y-1.5 mb-3">
+              {PRESETS.map(p => (
+                <button key={p.label} onClick={() => { setDurations({ FOCUS: p.focus, SHORT: p.short, LONG: p.long }); if (!isRunning) setTimeLeft(p.focus * 60); setShowSettings(false); }}
+                  className={`w-full text-left text-xs px-3 py-2 rounded-lg transition-colors ${durations.FOCUS === p.focus ? 'btn-gradient text-white font-bold' : 'text-gray-400 hover:text-white hover:bg-white/[0.05]'}`}>
+                  {p.label} <span className="text-gray-600 ml-1">focus/short/long</span>
+                </button>
+              ))}
+            </div>
+            <div className="space-y-2 pt-2 border-t border-white/[0.05]">
+              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Custom (minutes)</p>
+              {['FOCUS', 'SHORT', 'LONG'].map(key => (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500 w-10 font-bold">{key}</span>
+                  <input type="number" min={1} max={120} value={durations[key]}
+                    onChange={e => {
+                      const v = Math.max(1, Math.min(120, Number(e.target.value) || 1));
+                      setDurations(d => ({ ...d, [key]: v }));
+                      if (!isRunning && key === 'FOCUS') setTimeLeft(v * 60);
+                    }}
+                    className="flex-1 px-2 py-1 text-xs text-white rounded-lg outline-none"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Subject Selector */}
         <div className="relative z-10 w-full max-w-xs mb-6 md:mb-8">

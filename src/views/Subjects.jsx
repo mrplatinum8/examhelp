@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { CheckCircle, CalendarIcon, ChevronDown, ChevronUp, Clock, Layers } from 'lucide-react';
 import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
-export default function SubjectsView({ subjects, cards, onToggleTopic }) {
+export default function SubjectsView() {
+  const { subjects, cards, onToggleTopic } = useData();
   const [expandedId, setExpandedId] = useState(null);
 
   return (
@@ -44,11 +46,11 @@ export default function SubjectsView({ subjects, cards, onToggleTopic }) {
                   <div className="relative w-14 h-14 shrink-0">
                     <svg viewBox="0 0 56 56" className="w-14 h-14 -rotate-90">
                       <circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="transparent" />
-                      <circle cx="28" cy="28" r="22" stroke="url(#subGrad)" strokeWidth="4" fill="transparent"
+                      <circle cx="28" cy="28" r="22" stroke={`url(#subGrad-${sub.id})`} strokeWidth="4" fill="transparent"
                         strokeDasharray="138.2" strokeDashoffset={138.2 - (138.2 * sub.progress) / 100}
                         strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
                       <defs>
-                        <linearGradient id="subGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <linearGradient id={`subGrad-${sub.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
                           <stop offset="0%" stopColor="#7c3aed" /><stop offset="100%" stopColor="#3b82f6" />
                         </linearGradient>
                       </defs>

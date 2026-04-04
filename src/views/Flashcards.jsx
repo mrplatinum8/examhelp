@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Plus, X, Trash2, Sparkles } from 'lucide-react';
+import { Plus, X, Trash2, Sparkles, Upload } from 'lucide-react';
 import { SUBJECT_COLORS } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
-export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard, onDeleteCard }) {
+export default function FlashcardsView() {
+  const { subjects, cards, onAddCard, onRateCard, onDeleteCard } = useData();
   const [filterSub, setFilterSub] = useState('all');
   const [showAll, setShowAll] = useState(false);
   const [cardIdx, setCardIdx] = useState(0);
@@ -12,6 +14,8 @@ export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard,
   const [newQ, setNewQ] = useState('');
   const [newA, setNewA] = useState('');
   const [saving, setSaving] = useState(false);
+  const [addMode, setAddMode] = useState('single'); // 'single' | 'bulk'
+  const [bulkText, setBulkText] = useState('');
   const today = new Date().toISOString().split('T')[0];
 
   const filtered = useMemo(() => {
@@ -141,7 +145,7 @@ export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard,
                 className={`flex-1 min-w-[80px] px-3 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all hover:scale-105 ${text}`}
                 style={{ background: bg, border: `1px solid ${border}` }}>{label}</button>
             ))}
-            <button onClick={e => { e.stopPropagation(); if (curCard) onDeleteCard(curCard.id); }}
+            <button onClick={e => { e.stopPropagation(); if (curCard && window.confirm('Delete this flashcard?')) onDeleteCard(curCard.id); }}
               className="px-3 md:px-4 py-2.5 md:py-3 rounded-xl text-gray-700 hover:text-red-400 transition-colors shrink-0"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <Trash2 className="w-4 h-4" />
@@ -162,22 +166,56 @@ export default function FlashcardsView({ subjects, cards, onAddCard, onRateCard,
       {showAdd && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style={{ backdropFilter: 'blur(8px)' }}>
           <div className="w-full max-w-md p-6 rounded-2xl shadow-2xl" style={{ background: 'rgba(12,12,35,0.97)', border: '1px solid rgba(139,92,246,0.2)' }}>
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-white font-bold">New Flashcard</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white font-bold">Add Flashcards</h3>
               <button onClick={() => setShowAdd(false)}><X className="text-gray-600 hover:text-white w-5 h-5" /></button>
             </div>
-            <div className="space-y-4">
-              {[
-                { label: 'Subject', el: <select value={newSub} onChange={e => setNewSub(e.target.value)} className="w-full text-white text-sm p-2.5 rounded-xl outline-none" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>{subjects.map(s => <option key={s.id} value={s.id} style={{ background: '#0f0f2a' }}>{s.name}</option>)}</select> },
-                { label: 'Front (Question)', el: <textarea value={newQ} onChange={e => setNewQ(e.target.value)} rows={3} placeholder="What is…?" className="w-full text-white text-sm p-2.5 rounded-xl outline-none resize-none placeholder-gray-700 focus:border-violet-500/50 transition-colors" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} /> },
-                { label: 'Back (Answer)',    el: <textarea value={newA} onChange={e => setNewA(e.target.value)} rows={3} placeholder="Answer…" className="w-full text-white text-sm p-2.5 rounded-xl outline-none resize-none placeholder-gray-700 focus:border-violet-500/50 transition-colors" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} /> },
-              ].map(({ label, el }) => (
-                <div key={label}><label className="text-xs text-gray-600 font-bold uppercase mb-1.5 block">{label}</label>{el}</div>
+            {/* Mode tabs */}
+            <div className="flex gap-2 mb-5 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+              {[['single', 'Single'], ['bulk', 'Bulk Import']].map(([m, label]) => (
+                <button key={m} onClick={() => setAddMode(m)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${addMode === m ? 'btn-gradient text-white' : 'text-gray-500 hover:text-white'}`}>{label}</button>
               ))}
-              <button onClick={handleAdd} disabled={saving || !newQ.trim() || !newA.trim()}
-                className="w-full btn-gradient disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
-                {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Create Card'}
-              </button>
+            </div>
+            <div className="space-y-4">
+              {/* Subject (shared) */}
+              <div>
+                <label className="text-xs text-gray-600 font-bold uppercase mb-1.5 block">Subject</label>
+                <select value={newSub} onChange={e => setNewSub(e.target.value)} className="w-full text-white text-sm p-2.5 rounded-xl outline-none" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>{subjects.map(s => <option key={s.id} value={s.id} style={{ background: '#0f0f2a' }}>{s.name}</option>)}</select>
+              </div>
+              {addMode === 'single' ? (
+                <>
+                  <div><label className="text-xs text-gray-600 font-bold uppercase mb-1.5 block">Front (Question)</label><textarea value={newQ} onChange={e => setNewQ(e.target.value)} rows={3} placeholder="What is…?" className="w-full text-white text-sm p-2.5 rounded-xl outline-none resize-none placeholder-gray-700 focus:border-violet-500/50 transition-colors" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} /></div>
+                  <div><label className="text-xs text-gray-600 font-bold uppercase mb-1.5 block">Back (Answer)</label><textarea value={newA} onChange={e => setNewA(e.target.value)} rows={3} placeholder="Answer…" className="w-full text-white text-sm p-2.5 rounded-xl outline-none resize-none placeholder-gray-700 focus:border-violet-500/50 transition-colors" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} /></div>
+                  <button onClick={handleAdd} disabled={saving || !newQ.trim() || !newA.trim()}
+                    className="w-full btn-gradient disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+                    {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Create Card'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-xs text-gray-600 font-bold uppercase mb-1.5 block">Paste cards (one per line, Q | A)</label>
+                    <textarea value={bulkText} onChange={e => setBulkText(e.target.value)} rows={6}
+                      placeholder={`What is ODE? | Ordinary Differential Equation\nDefine BJT | Bipolar Junction Transistor`}
+                      className="w-full text-white text-sm p-2.5 rounded-xl outline-none resize-none placeholder-gray-700 focus:border-violet-500/50 transition-colors font-mono"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                    <p className="text-[10px] text-gray-700 mt-1">Separate question and answer with <kbd className="px-1 py-0.5 rounded bg-white/5 text-gray-500 font-mono">|</kbd> pipe character.</p>
+                  </div>
+                  <button onClick={async () => {
+                    const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean);
+                    const pairs = lines.map(l => { const [q, ...a] = l.split('|'); return [q?.trim(), a.join('|').trim()]; }).filter(([q, a]) => q && a);
+                    if (pairs.length === 0) return;
+                    setSaving(true);
+                    const sub = newSub || subjects[0]?.id;
+                    for (const [q, a] of pairs) { await onAddCard(sub, q, a); }
+                    setSaving(false); setBulkText(''); setShowAdd(false);
+                  }} disabled={saving || !bulkText.trim()}
+                    className="w-full btn-gradient disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+                    {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Upload className="w-4 h-4" /> Import {bulkText.split('\n').filter(l => l.includes('|')).length} Cards</>}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

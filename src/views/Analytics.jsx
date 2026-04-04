@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { Flame, Clock, Target, TrendingUp } from 'lucide-react';
+import { Flame, Clock, Target, TrendingUp, Download } from 'lucide-react';
 import { SUBJECT_COLORS } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
 const Tip = ({ active, payload, label }) => active && payload?.length ? (
   <div className="rounded-xl px-3 py-2 text-xs" style={{ background: 'rgba(15,15,40,0.95)', border: '1px solid rgba(139,92,246,0.2)', backdropFilter: 'blur(12px)' }}>
@@ -10,7 +11,8 @@ const Tip = ({ active, payload, label }) => active && payload?.length ? (
   </div>
 ) : null;
 
-export default function AnalyticsView({ subjects, sessions, streak }) {
+export default function AnalyticsView() {
+  const { subjects, sessions, streak } = useData();
   const weekData = useMemo(() => Array.from({ length: 7 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (6 - i));
     const ds = d.toISOString().split('T')[0];
@@ -37,11 +39,32 @@ export default function AnalyticsView({ subjects, sessions, streak }) {
     { icon: <Flame className="w-5 h-5 text-orange-400" />, label: 'Streak', value: `${streak}d`, sub: 'consecutive days', from: 'from-orange-500/10', border: 'rgba(249,115,22,0.15)' },
   ];
 
+  const exportCSV = () => {
+    if (!sessions.length) { alert('No session data to export.'); return; }
+    const headers = ['Date', 'Time', 'Subject', 'Duration (mins)'];
+    const rows = sessions.map(s => {
+      const sub = subjects.find(x => x.id === s.subject_id);
+      const [d, t] = s.started_at.split('T');
+      return [d, t.split('.')[0], sub ? sub.name : 'Unknown', s.duration_minutes];
+    });
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `examfocus_sessions_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   return (
     <div className="animate-in fade-in duration-300 space-y-6">
-      <div>
-        <h1 className="text-3xl font-black"><span className="gradient-text">Analytics</span></h1>
-        <p className="text-gray-600 text-sm mt-1">Your study performance at a glance.</p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-black"><span className="gradient-text">Analytics</span></h1>
+          <p className="text-gray-600 text-sm mt-1">Your study performance at a glance.</p>
+        </div>
+        <button onClick={exportCSV} className="px-4 py-2 rounded-xl text-xs font-bold glass hover:bg-white/[0.08] text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+          <Download className="w-3.5 h-3.5" /> Export Data
+        </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

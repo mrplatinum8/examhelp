@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import { CalendarCheck, BookOpen, AlertTriangle } from 'lucide-react';
-import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
+import { SUBJECT_COLORS, daysUntil, getSubjectHex } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
-export default function RevisionScheduleView({ subjects }) {
+export default function RevisionScheduleView() {
+  const { subjects } = useData();
   const schedule = useMemo(() => {
     const today = new Date(new Date().toDateString());
     
@@ -10,7 +12,7 @@ export default function RevisionScheduleView({ subjects }) {
     const examSubjects = subjects
       .filter(s => s.exam_date && daysUntil(s.exam_date) > 0)
       .map(s => {
-        const unchecked = (s.topics || []).filter(t => !t.completed);
+        const unchecked = (s.topics || []).filter(t => !t.done);
         return { ...s, unchecked, daysLeft: daysUntil(s.exam_date) };
       })
       .filter(s => s.unchecked.length > 0)
@@ -63,7 +65,7 @@ export default function RevisionScheduleView({ subjects }) {
   }, [subjects]);
 
   const completedAll = subjects.filter(s => s.exam_date && daysUntil(s.exam_date) > 0)
-    .every(s => (s.topics || []).every(t => t.completed));
+    .every(s => (s.topics || []).every(t => t.done));
 
   return (
     <div className="max-w-3xl mx-auto animate-in fade-in duration-300">
@@ -122,10 +124,10 @@ export default function RevisionScheduleView({ subjects }) {
                     return (
                       <div key={`${item.subject.id}-${i}`}
                         className="glass rounded-xl px-4 py-3 flex items-center gap-3 group hover:border-violet-500/20 transition-all"
-                        style={{ borderLeft: `3px solid`, borderLeftColor: c.bg.includes('blue') ? '#3b82f6' : c.bg.includes('amber') ? '#f59e0b' : c.bg.includes('emerald') ? '#10b981' : c.bg.includes('purple') ? '#a855f7' : c.bg.includes('pink') ? '#ec4899' : c.bg.includes('red') ? '#ef4444' : c.bg.includes('cyan') ? '#06b6d4' : c.bg.includes('indigo') ? '#6366f1' : '#7c3aed' }}>
+                        style={{ borderLeft: `3px solid`, borderLeftColor: getSubjectHex(item.subject.color) }}>
                         <BookOpen className={`w-3.5 h-3.5 shrink-0 ${c.text}`} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{item.topic.name}</p>
+                          <p className="text-sm font-semibold text-white truncate">{item.topic.label}</p>
                           <p className={`text-[10px] font-bold ${c.text}`}>{item.subject.short_name}</p>
                         </div>
                       </div>

@@ -1,19 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, X, Trash2, Edit3, Clock } from 'lucide-react';
-import { SUBJECT_COLORS } from '../lib/helpers';
+import { SUBJECT_COLORS, formatTime12, getSubjectHex } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function formatTime12(t) {
-  if (!t) return '';
-  const [h, m] = t.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12 = h % 12 || 12;
-  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
-}
 
-export default function DailyScheduleView({ subjects, schedule, onAddSlot, onUpdateSlot, onDeleteSlot }) {
+export default function DailyScheduleView() {
+  const { subjects, schedule, onAddSlot, onUpdateSlot, onDeleteSlot } = useData();
   const today = new Date().getDay();
   const [selectedDay, setSelectedDay] = useState(today);
   const [showModal, setShowModal] = useState(false);
@@ -74,6 +69,7 @@ export default function DailyScheduleView({ subjects, schedule, onAddSlot, onUpd
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Delete this time slot?')) return;
     await onDeleteSlot(id);
   };
 
@@ -144,7 +140,7 @@ export default function DailyScheduleView({ subjects, schedule, onAddSlot, onUpd
           return (
             <div key={slot.id}
               className="glass rounded-2xl px-5 py-4 flex items-center gap-4 group hover:border-violet-500/20 transition-all"
-              style={{ borderLeft: '4px solid', borderLeftColor: c.bg?.includes('blue') ? '#3b82f6' : c.bg?.includes('amber') ? '#f59e0b' : c.bg?.includes('emerald') ? '#10b981' : c.bg?.includes('purple') ? '#a855f7' : c.bg?.includes('pink') ? '#ec4899' : c.bg?.includes('red') ? '#ef4444' : c.bg?.includes('cyan') ? '#06b6d4' : c.bg?.includes('indigo') ? '#6366f1' : '#7c3aed' }}>
+              style={{ borderLeft: '4px solid', borderLeftColor: getSubjectHex(slot.color || sub?.color) }}>
               {/* Time */}
               <div className="shrink-0 text-center min-w-[70px]">
                 <p className="text-xs font-bold text-white">{formatTime12(slot.start_time)}</p>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useData } from '../contexts/DataContext';
 
 const getHeatClass = (n) => {
   if (!n) return 'heatmap-0';
@@ -7,7 +8,8 @@ const getHeatClass = (n) => {
   return 'heatmap-3';
 };
 
-export default function HeatmapView({ heatmapData }) {
+export default function HeatmapView() {
+  const { heatmapData } = useData();
   const today = new Date();
   const WEEKS = 15;
   const TOTAL = WEEKS * 7;

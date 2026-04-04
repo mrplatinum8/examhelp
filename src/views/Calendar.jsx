@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SUBJECT_COLORS } from '../lib/helpers';
+import { useData } from '../contexts/DataContext';
 
-export default function CalendarView({ subjects, sessions, studyLogs, onAddStudyLog, onUpdateExamDate }) {
+export default function CalendarView() {
+  const { subjects, sessions, studyLogs, onAddStudyLog, onUpdateExamDate } = useData();
   const realToday = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modal, setModal] = useState(null);
