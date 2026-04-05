@@ -203,10 +203,10 @@ export default function PomodoroView() {
         <div className="relative z-10 w-full max-w-xs mb-6 md:mb-8">
           <label className="block text-center text-[10px] text-gray-600 uppercase tracking-widest mb-1.5 md:mb-2 font-bold">Focusing on</label>
           <div className="relative">
-            <select value={selId} onChange={e => setSelId(e.target.value)} disabled={isRunning}
+            <select value={selId} onChange={e => setSelId(e.target.value)} disabled={isRunning || subjects.length === 0}
               className="w-full appearance-none glass rounded-xl py-2.5 px-4 text-white font-bold text-sm text-center outline-none cursor-pointer disabled:opacity-60 border-0 bg-white/[0.05]"
               style={{ border: '1px solid rgba(139,92,246,0.25)' }}>
-              {subjects.map(s => <option key={s.id} value={s.id} style={{ background: '#0f0f2a' }}>{s.name} ({s.short_name})</option>)}
+              {subjects.length === 0 ? <option value="" style={{ background: '#0f0f2a' }}>No subjects (Add one first)</option> : subjects.map(s => <option key={s.id} value={s.id} style={{ background: '#0f0f2a' }}>{s.name} ({s.short_name})</option>)}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           </div>
@@ -244,7 +244,8 @@ export default function PomodoroView() {
         {/* Controls */}
         <div className="relative z-10 flex items-center gap-4">
           <button onClick={isRunning ? handlePause : handleStart}
-            className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 ${isRunning ? 'glass-violet border-violet-500/30 glow-violet' : 'btn-gradient glow-violet'}`}
+            disabled={subjects.length === 0}
+            className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-all hover:scale-105 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed ${isRunning ? 'glass-violet border-violet-500/30 glow-violet' : 'btn-gradient glow-violet'}`}
             style={isRunning ? { border: '1px solid rgba(139,92,246,0.4)' } : {}}>
             {isRunning ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-0.5" />}
           </button>

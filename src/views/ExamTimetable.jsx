@@ -177,7 +177,7 @@ export default function ExamTimetableView() {
                 <select value={formSubject} onChange={e => setFormSubject(e.target.value)}
                   className="w-full px-4 py-3 text-white text-sm rounded-xl outline-none appearance-none"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <option value="">Select subject</option>
+                  <option value="">{subjects.length === 0 ? 'No subjects created' : 'Select subject'}</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.short_name} — {s.name}</option>)}
                 </select>
               </div>

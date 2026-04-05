@@ -1,16 +1,99 @@
 import React, { useState } from 'react';
-import { CheckCircle, CalendarIcon, ChevronDown, ChevronUp, Clock, Layers } from 'lucide-react';
+import { CheckCircle, CalendarIcon, ChevronDown, ChevronUp, Clock, Layers, Plus, Trash2, X } from 'lucide-react';
 import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
 import { useData } from '../contexts/DataContext';
 
 export default function SubjectsView() {
-  const { subjects, cards, onToggleTopic } = useData();
+  const { subjects, cards, onToggleTopic, onAddSubject, onDeleteSubject, onAddTopic, onDeleteTopic } = useData();
   const [expandedId, setExpandedId] = useState(null);
+  const [topicInput, setTopicInput] = useState({});
+  
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newShortName, setNewShortName] = useState('');
+  const [newColor, setNewColor] = useState('blue');
+  const [loading, setLoading] = useState(false);
+
+  const handleAdd = async () => {
+    if (!newName.trim() || !newShortName.trim()) return;
+    setLoading(true);
+    await onAddSubject({ name: newName, short_name: newShortName, color: newColor });
+    setLoading(false);
+    setShowAddForm(false);
+    setNewName('');
+    setNewShortName('');
+    setNewColor('blue');
+  };
+
+  const handleDelete = async (id, e) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this subject? All associated data will be deleted. This cannot be undone.')) {
+      await onDeleteSubject(id);
+    }
+  };
 
   return (
     <div className="animate-in fade-in duration-300">
-      <h1 className="text-3xl font-black mb-1"><span className="gradient-text">Subjects</span></h1>
-      <p className="text-gray-600 text-sm mb-6">Track progress per subject and manage your topics checklist.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-black mb-1"><span className="gradient-text">Subjects</span></h1>
+          <p className="text-gray-600 text-sm">Track progress per subject and manage your topics checklist.</p>
+        </div>
+        <button onClick={() => setShowAddForm(true)} className="flex items-center justify-center gap-2 btn-gradient px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-lg shadow-violet-500/20 active:scale-95 transition-all">
+          <Plus className="w-4 h-4" /> Add Subject
+        </button>
+      </div>
+
+      {subjects.length === 0 && (
+        <div className="col-span-full border border-dashed border-gray-600/50 rounded-2xl p-10 flex flex-col items-center justify-center text-center">
+          <Layers className="w-12 h-12 text-gray-500 mb-3" />
+          <h3 className="text-lg font-bold text-white mb-2">No subjects yet</h3>
+          <p className="text-sm text-gray-500 max-w-sm mb-4">You haven't added any subjects to your study plan. Add your first subject to get started.</p>
+          <button onClick={() => setShowAddForm(true)} className="btn-gradient px-6 py-2 rounded-xl text-white font-bold text-sm shadow-lg">
+            Add Subject
+          </button>
+        </div>
+      )}
+
+      {showAddForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="glass rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2"><Layers className="w-5 h-5 text-violet-400" /> New Subject</h3>
+              <button onClick={() => setShowAddForm(false)} className="text-gray-500 hover:text-white transition-colors p-1" aria-label="Close"><X className="w-5 h-5" /></button>
+            </div>
+                        <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject Name</label>
+                <input type="text" placeholder="e.g. Software Engineering" value={newName} onChange={e => setNewName(e.target.value)} autoFocus
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-colors" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Short Name</label>
+                  <input type="text" placeholder="e.g. SE" value={newShortName} onChange={e => setNewShortName(e.target.value)} maxLength={6}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Color</label>
+                  <select value={newColor} onChange={e => setNewColor(e.target.value)} 
+                    className="w-full text-white text-sm px-4 py-2.5 rounded-xl outline-none" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    {Object.keys(SUBJECT_COLORS).map(color => (
+                        <option key={color} value={color} style={{ background: '#0f0f2a' }}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <button onClick={handleAdd} disabled={loading || !newName.trim() || !newShortName.trim()}
+                className="w-full mt-2 btn-gradient py-3 rounded-xl text-white font-bold shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
+                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Create Subject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {subjects.map(sub => {
@@ -70,7 +153,7 @@ export default function SubjectsView() {
 
               {/* Expanded */}
               {isExpanded && (
-                <div className="border-t border-white/[0.05] p-4 md:p-5 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 animate-in slide-in-from-top-2 duration-200">
+                <div className="border-t border-white/5 p-4 md:p-5 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 animate-in slide-in-from-top-2 duration-200">
                   <div className="min-w-0 overflow-hidden">
                     <h4 className="text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-widest mb-3 md:mb-4">Topics Checklist</h4>
                     <div className="space-y-2.5">
@@ -80,8 +163,29 @@ export default function SubjectsView() {
                             {topic.done && <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />}
                           </div>
                           <span className={`text-xs md:text-sm flex-1 leading-snug transition-colors ${topic.done ? 'text-gray-700 line-through' : 'text-gray-300 group-hover:text-white'}`}>{topic.label}</span>
+                          <button onClick={(e) => { e.stopPropagation(); onDeleteTopic(topic.id); }} className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-400 p-1" aria-label="Delete Topic"><X className="w-3.5 h-3.5" /></button>
                         </div>
                       ))}
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-white/5" onClick={e => e.stopPropagation()}>
+                        <input type="text" placeholder="Add a new topic..." value={topicInput[sub.id] || ''} 
+                          onChange={e => setTopicInput({...topicInput, [sub.id]: e.target.value})}
+                          onKeyDown={async e => {
+                             if (e.key === 'Enter' && topicInput[sub.id]?.trim()) {
+                               await onAddTopic(sub.id, topicInput[sub.id].trim());
+                               setTopicInput({...topicInput, [sub.id]: ''});
+                             }
+                          }}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50"
+                        />
+                        <button onClick={async () => {
+                           if (topicInput[sub.id]?.trim()) {
+                             await onAddTopic(sub.id, topicInput[sub.id].trim());
+                             setTopicInput({...topicInput, [sub.id]: ''});
+                           }
+                        }} className="btn-gradient text-white p-1.5 rounded-lg shadow disabled:opacity-50" disabled={!topicInput[sub.id]?.trim()}>
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <div>
@@ -101,6 +205,11 @@ export default function SubjectsView() {
                         <p className="text-[10px] md:text-xs text-gray-600 mb-1">Topics Complete</p>
                         <p className="text-lg md:text-xl font-black text-white">{doneCount}<span className="text-gray-700 font-light"> / {sub.topics?.length || 0}</span></p>
                       </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-white/[0.05] flex justify-end">
+                      <button onClick={(e) => handleDelete(sub.id, e)} className="flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Subject
+                      </button>
                     </div>
                   </div>
                 </div>

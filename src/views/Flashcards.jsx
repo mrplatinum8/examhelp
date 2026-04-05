@@ -86,7 +86,8 @@ export default function FlashcardsView() {
             {showAll ? 'Due Today' : 'All Cards'}
           </button>
           <button onClick={() => { setShowAdd(true); setNewSub(subjects[0]?.id || ''); }}
-            className="flex items-center gap-1.5 text-xs btn-gradient text-white px-3 py-1.5 rounded-full font-bold">
+            disabled={subjects.length === 0}
+            className={`flex items-center gap-1.5 text-xs text-white px-3 py-1.5 rounded-full font-bold ${subjects.length === 0 ? 'bg-gray-700 opacity-50' : 'btn-gradient'}`}>
             <Plus className="w-3.5 h-3.5" /> Add
           </button>
         </div>
@@ -103,8 +104,8 @@ export default function FlashcardsView() {
       {filtered.length === 0 ? (
         <div className="text-center py-24">
           <p className="text-4xl mb-3">🎉</p>
-          <p className="font-bold text-white text-lg">{showAll ? 'No cards yet.' : 'All caught up!'}</p>
-          <p className="text-sm text-gray-600 mt-1">{showAll ? 'Add your first flashcard above.' : 'No cards due today. Check back tomorrow!'}</p>
+          <p className="font-bold text-white text-lg">{subjects.length === 0 ? 'No subjects yet.' : (showAll ? 'No cards yet.' : 'All caught up!')}</p>
+          <p className="text-sm text-gray-600 mt-1">{subjects.length === 0 ? 'Please create a subject first before adding flashcards.' : (showAll ? 'Add your first flashcard above.' : 'No cards due today. Check back tomorrow!')}</p>
         </div>
       ) : (
         <>

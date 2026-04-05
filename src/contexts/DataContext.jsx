@@ -40,7 +40,6 @@ export function DataProvider({ session, children }) {
 
   // ───── Loaders ─────
   const loadSubjects = useCallback(async () => {
-    if (seedingRef.current) return;
     try {
       const { data, error } = await supabase.from('subjects').select('*, topics(*)').order('name');
       if (error) {
@@ -48,54 +47,18 @@ export function DataProvider({ session, children }) {
         showToast('DB error: ' + error.message, 'error');
         setSubjects([]); return;
       }
-      if (data?.length) {
-        const syncedData = data.map(dbSub => {
-          const seedMatch = SUBJECTS_SEED.find(s => s.short_name === dbSub.short_name);
-          if (seedMatch && dbSub.exam_date !== seedMatch.exam_date) {
-            supabase.from('subjects').update({ exam_date: seedMatch.exam_date }).eq('id', dbSub.id).then();
-            return { ...dbSub, exam_date: seedMatch.exam_date };
-          }
-          return dbSub;
-        });
-        setSubjects(syncedData.map(s => ({
+      if (data) {
+        setSubjects(data.map(s => ({
           ...s,
           progress: s.topics?.length ? Math.round(s.topics.filter(t => t.done).length / s.topics.length * 100) : 0,
         })));
       } else {
-        seedingRef.current = true;
-        try {
-          if (!uid) { showToast('Not authenticated — cannot seed data', 'error'); return; }
-          for (const sub of SUBJECTS_SEED) {
-            const { data: newSub, error: subErr } = await supabase.from('subjects')
-              .insert({ user_id: uid, name: sub.name, short_name: sub.short_name, color: sub.color, exam_date: sub.exam_date })
-              .select().single();
-            if (subErr) { console.error('[seed] subject insert failed:', subErr); showToast('Seed failed: ' + subErr.message, 'error'); return; }
-            if (newSub) {
-              const { error: topicErr } = await supabase.from('topics').insert(
-                sub.topics.map((label, pos) => ({ user_id: uid, subject_id: newSub.id, label, done: false, position: pos }))
-              );
-              if (topicErr) console.error('[seed] topic insert failed:', topicErr);
-            }
-          }
-          const { data: seeded } = await supabase.from('subjects').select('*, topics(*)').order('name');
-          if (seeded?.length) {
-            setSubjects(seeded.map(s => ({
-              ...s,
-              progress: s.topics?.length ? Math.round(s.topics.filter(t => t.done).length / s.topics.length * 100) : 0,
-            })));
-            showToast('✅ Subjects set up successfully!');
-          } else {
-            showToast('⚠️ Seeding failed silently. Check F12 → Console.', 'error');
-          }
-        } finally {
-          seedingRef.current = false;
-        }
+        setSubjects([]);
       }
     } catch (err) {
       console.error('[loadSubjects] error:', err);
       showToast('Unexpected error: ' + err.message, 'error');
       setSubjects([]);
-      seedingRef.current = false;
     }
   }, [showToast, uid]);
 
@@ -157,6 +120,30 @@ export function DataProvider({ session, children }) {
   const heatmapData = useMemo(() => computeHeatmap(sessions, studyLogs), [sessions, studyLogs]);
 
   // ───── CRUD callbacks (with error handling & user_id) ─────
+  const onAddSubject = useCallback(async (data) => {
+    const { error } = await supabase.from('subjects').insert({ user_id: uid, ...data });
+    if (error) { showToast('Failed to add subject: ' + error.message, 'error'); return; }
+    await loadSubjects(); showToast('Subject created! 📚');
+  }, [loadSubjects, showToast, uid]);
+
+  const onDeleteSubject = useCallback(async (subjectId) => {
+    const { error } = await supabase.from('subjects').delete().eq('id', subjectId);
+    if (error) { showToast('Failed to delete subject: ' + error.message, 'error'); return; }
+    await loadSubjects(); showToast('Subject deleted.');
+  }, [loadSubjects, showToast]);
+
+  const onAddTopic = useCallback(async (subjectId, label) => {
+    const { error } = await supabase.from('topics').insert({ user_id: uid, subject_id: subjectId, label, done: false });
+    if (error) { showToast('Failed to add topic: ' + error.message, 'error'); return; }
+    await loadSubjects();
+  }, [loadSubjects, showToast, uid]);
+
+  const onDeleteTopic = useCallback(async (topicId) => {
+    const { error } = await supabase.from('topics').delete().eq('id', topicId);
+    if (error) { showToast('Failed to delete topic: ' + error.message, 'error'); return; }
+    await loadSubjects();
+  }, [loadSubjects, showToast]);
+
   const onToggleTopic = useCallback(async (topicId, currentDone) => {
     const { error } = await supabase.from('topics').update({ done: !currentDone }).eq('id', topicId);
     if (error) { showToast('Failed to toggle topic: ' + error.message, 'error'); return; }
@@ -256,7 +243,7 @@ export function DataProvider({ session, children }) {
     schedule, exams: examTimetable,
     dataLoading, toast,
     // Actions
-    showToast, dismissToast, onToggleTopic, onAddSession, onAddCard, onRateCard,
+    showToast, dismissToast, onAddSubject, onDeleteSubject, onAddTopic, onDeleteTopic, onToggleTopic, onAddSession, onAddCard, onRateCard,
     onDeleteCard, onAddStudyLog, onUpdateExamDate,
     onAddSlot, onUpdateSlot, onDeleteSlot,
     onAddExam, onUpdateExam, onDeleteExam,

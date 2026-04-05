@@ -65,7 +65,7 @@ export default function DashboardView() {
             <button onClick={() => navigate('/subjects')} className="text-xs text-violet-400 hover:text-violet-300 font-semibold transition-colors">View all →</button>
           </div>
           <div className="space-y-4 md:space-y-5">
-            {subjects.length === 0 && <p className="text-gray-600 text-sm text-center py-6">Subjects loading…</p>}
+            {subjects.length === 0 && <p className="text-gray-500 text-sm italic text-center py-6 border border-dashed border-white/5 rounded-xl">No subjects added yet. Go to Subjects to create one.</p>}
             {subjects.map((sub, i) => {
               const c = SUBJECT_COLORS[sub.color] || SUBJECT_COLORS.blue;
               return (
@@ -102,7 +102,7 @@ export default function DashboardView() {
                   </div>
                 </>
               ) : (
-                <p className="text-gray-600 text-sm">Complete your first Pomodoro to unlock your mission!</p>
+                <p className="text-gray-600 text-sm">Create a subject and complete a session to unlock your daily mission.</p>
               )}
             </div>
           </div>
