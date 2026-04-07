@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { CheckCircle, CalendarIcon, ChevronDown, ChevronUp, Clock, Layers, Plus, Trash2, X } from 'lucide-react';
 import { SUBJECT_COLORS, daysUntil, getEarliestExamDate } from '../lib/helpers';
 import { useData } from '../contexts/DataContext';
@@ -13,6 +13,23 @@ export default function SubjectsView() {
   const [newShortName, setNewShortName] = useState('');
   const [newColor, setNewColor] = useState('blue');
   const [loading, setLoading] = useState(false);
+
+  const sortedSubjects = useMemo(() => {
+    return [...subjects].sort((a, b) => {
+      const dateA = getEarliestExamDate(a.id, exams);
+      const dateB = getEarliestExamDate(b.id, exams);
+      let daysA = daysUntil(dateA);
+      let daysB = daysUntil(dateB);
+
+      if (daysA === null) daysA = Infinity;
+      if (daysB === null) daysB = Infinity;
+
+      if (daysA !== daysB) {
+        return daysA - daysB;
+      }
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  }, [subjects, exams]);
 
   const handleAdd = async () => {
     if (!newName.trim() || !newShortName.trim()) return;
@@ -96,7 +113,7 @@ export default function SubjectsView() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {subjects.map(sub => {
+        {sortedSubjects.map(sub => {
           const c = SUBJECT_COLORS[sub.color] || SUBJECT_COLORS.blue;
           const isExpanded = expandedId === sub.id;
           const cardCount = cards.filter(cd => cd.subject_id === sub.id).length;
