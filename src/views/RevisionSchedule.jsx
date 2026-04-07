@@ -1,21 +1,24 @@
 import React, { useMemo } from 'react';
 import { CalendarCheck, BookOpen, AlertTriangle } from 'lucide-react';
-import { SUBJECT_COLORS, daysUntil, getSubjectHex } from '../lib/helpers';
+import { SUBJECT_COLORS, daysUntil, getSubjectHex, getEarliestExamDate } from '../lib/helpers';
 import { useData } from '../contexts/DataContext';
 
 export default function RevisionScheduleView() {
-  const { subjects } = useData();
+  const { subjects, exams } = useData();
   const schedule = useMemo(() => {
     const today = new Date(new Date().toDateString());
     
-    // Collect subjects with exam dates and unchecked topics
+    // Collect subjects with exam dates (from exam_timetable) and unchecked topics
     const examSubjects = subjects
-      .filter(s => s.exam_date && daysUntil(s.exam_date) > 0)
       .map(s => {
+        const examDate = getEarliestExamDate(s.id, exams);
+        if (!examDate) return null;
+        const dl = daysUntil(examDate) + 1; // Map back to actual calendar days available for scheduling
+        if (dl <= 0) return null;
         const unchecked = (s.topics || []).filter(t => !t.done);
-        return { ...s, unchecked, daysLeft: daysUntil(s.exam_date) };
+        return { ...s, _examDate: examDate, unchecked, daysLeft: dl };
       })
-      .filter(s => s.unchecked.length > 0)
+      .filter(s => s && s.unchecked.length > 0)
       .sort((a, b) => a.daysLeft - b.daysLeft);
 
     if (examSubjects.length === 0) return [];
@@ -62,9 +65,10 @@ export default function RevisionScheduleView() {
     }
 
     return plan;
-  }, [subjects]);
+  }, [subjects, exams]);
 
-  const completedAll = subjects.filter(s => s.exam_date && daysUntil(s.exam_date) > 0)
+  const completedAll = subjects
+    .filter(s => getEarliestExamDate(s.id, exams) && daysUntil(getEarliestExamDate(s.id, exams)) >= -1)
     .every(s => (s.topics || []).every(t => t.done));
 
   return (

@@ -34,7 +34,13 @@ export default function AuthGate() {
     setLoading(true); setError(''); setSuccess('');
 
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: 'https://examhelp-wheat.vercel.app/'
+        }
+      });
       setLoading(false);
       if (error) setError(error.message);
       else setSuccess('Account created! You are now signed in.');

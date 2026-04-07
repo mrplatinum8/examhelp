@@ -7,7 +7,7 @@ import { useData } from '../contexts/DataContext';
 const GRAD = ['progress-gradient', 'progress-gradient-orange', 'progress-gradient-green', 'progress-gradient-pink', 'progress-gradient', 'progress-gradient-orange', 'progress-gradient-green', 'progress-gradient-pink'];
 
 export default function DashboardView() {
-  const { subjects, sessions, streak } = useData();
+  const { subjects, sessions, exams, streak } = useData();
   const navigate = useNavigate();
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -15,7 +15,14 @@ export default function DashboardView() {
   const totalFocusMin = sessions.filter(s => s.started_at?.startsWith(todayStr)).reduce((a, s) => a + (s.duration_minutes || 25), 0);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
-  const upcomingExams = [...subjects].filter(s => s.exam_date && daysUntil(s.exam_date) >= 0)
+  // Upcoming exams from exam_timetable (single source of truth)
+  const upcomingExams = (exams || [])
+    .filter(e => e.exam_date && daysUntil(e.exam_date) >= -1)
+    .map(e => {
+      const sub = subjects.find(s => s.id === e.subject_id);
+      return sub ? { ...e, short_name: sub.short_name, color: sub.color, name: sub.name } : null;
+    })
+    .filter(Boolean)
     .sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date));
   const bestSubject = [...subjects].sort((a, b) => b.pomodoroCount - a.pomodoroCount)[0];
 
@@ -131,8 +138,14 @@ export default function DashboardView() {
                       <span className={`text-[9px] font-bold uppercase tracking-wider mt-1 inline-block ${urgencyColor}`}>{urgencyLabel}</span>
                     </div>
                     <div className="text-right">
-                      <p className={`text-2xl font-black ${urgencyColor}`}>{days}</p>
-                      <p className="text-[10px] text-gray-600 uppercase font-bold tracking-wider">days</p>
+                      {days === -1 ? (
+                        <p className={`text-xl font-black mt-2 ${urgencyColor}`}>Today</p>
+                      ) : (
+                        <>
+                          <p className={`text-2xl font-black ${urgencyColor}`}>{days}</p>
+                          <p className="text-[10px] text-gray-600 uppercase font-bold tracking-wider">days</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 );

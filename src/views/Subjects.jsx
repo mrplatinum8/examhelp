@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { CheckCircle, CalendarIcon, ChevronDown, ChevronUp, Clock, Layers, Plus, Trash2, X } from 'lucide-react';
-import { SUBJECT_COLORS, daysUntil } from '../lib/helpers';
+import { SUBJECT_COLORS, daysUntil, getEarliestExamDate } from '../lib/helpers';
 import { useData } from '../contexts/DataContext';
 
 export default function SubjectsView() {
-  const { subjects, cards, onToggleTopic, onAddSubject, onDeleteSubject, onAddTopic, onDeleteTopic } = useData();
+  const { subjects, cards, exams, onToggleTopic, onAddSubject, onDeleteSubject, onAddTopic, onDeleteTopic } = useData();
   const [expandedId, setExpandedId] = useState(null);
   const [topicInput, setTopicInput] = useState({});
   
@@ -100,7 +100,8 @@ export default function SubjectsView() {
           const c = SUBJECT_COLORS[sub.color] || SUBJECT_COLORS.blue;
           const isExpanded = expandedId === sub.id;
           const cardCount = cards.filter(cd => cd.subject_id === sub.id).length;
-          const days = daysUntil(sub.exam_date);
+          const examDate = getEarliestExamDate(sub.id, exams);
+          const days = daysUntil(examDate);
           const doneCount = sub.topics?.filter(t => t.done).length || 0;
 
           return (
@@ -111,10 +112,10 @@ export default function SubjectsView() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                       <span className={`px-2 py-0.5 rounded-lg text-xs font-black text-white ${c.bg}`}>{sub.short_name}</span>
-                      {sub.exam_date && (
-                        <span className={`text-xs font-semibold flex items-center gap-1 ${days !== null && days <= 7 ? 'text-red-400' : 'text-gray-600'}`}>
+                      {examDate && (
+                        <span className={`text-xs font-semibold flex items-center gap-1 ${days !== null && days <= 7 && days >= -1 ? 'text-red-400' : 'text-gray-600'}`}>
                           <CalendarIcon className="w-3 h-3" />
-                          {days !== null && days >= 0 ? `${days}d` : 'passed'}
+                          {days !== null && days >= -1 ? (days === -1 ? 'Today' : `${days}d`) : 'passed'}
                         </span>
                       )}
                     </div>

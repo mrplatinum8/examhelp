@@ -71,7 +71,23 @@ export function computeHeatmap(sessions, studyLogs) {
 export function daysUntil(dateStr) {
   if (!dateStr) return null;
   const diff = new Date(dateStr) - new Date(new Date().toDateString());
-  return Math.ceil(diff / 86400000);
+  // Exclude both today and the exam date — count only the days in between
+  return Math.ceil(diff / 86400000) - 1;
+}
+
+/**
+ * Returns the earliest upcoming (today or future) exam_date string for a subject
+ * from exam_timetable rows. exam_timetable is the single source of truth.
+ * Returns null if no upcoming exam exists for this subject.
+ */
+export function getEarliestExamDate(subjectId, exams) {
+  if (!subjectId || !exams || exams.length === 0) return null;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const dates = exams
+    .filter(e => e.subject_id === subjectId && e.exam_date >= todayStr)
+    .map(e => e.exam_date)
+    .sort();
+  return dates[0] || null;
 }
 
 /** Shared time formatter: 24h → 12h AM/PM */

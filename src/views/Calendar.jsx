@@ -4,7 +4,7 @@ import { SUBJECT_COLORS } from '../lib/helpers';
 import { useData } from '../contexts/DataContext';
 
 export default function CalendarView() {
-  const { subjects, sessions, studyLogs, onAddStudyLog, onUpdateExamDate } = useData();
+  const { subjects, sessions, studyLogs, exams, onAddStudyLog, onUpdateExamDate } = useData();
   const realToday = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modal, setModal] = useState(null);
@@ -20,8 +20,19 @@ export default function CalendarView() {
   const pad = n => String(n).padStart(2, '0');
 
   const studiedDates = new Set([...sessions.map(s => s.started_at?.split('T')[0]), ...studyLogs.map(l => l.date)]);
+
+  // Build examMap purely from exam_timetable (single source of truth)
   const examMap = {};
-  subjects.forEach(s => { if (s.exam_date) examMap[s.exam_date] = s; });
+  (exams || []).forEach(e => {
+    const sub = subjects.find(s => s.id === e.subject_id);
+    if (sub && e.exam_date) {
+      if (!examMap[e.exam_date]) {
+        examMap[e.exam_date] = { ...sub, _timetable: [e] };
+      } else {
+        examMap[e.exam_date]._timetable.push(e);
+      }
+    }
+  });
 
   const openModal = (d) => {
     setModal({ day: d, dateStr: `${year}-${pad(month + 1)}-${pad(d)}` });
@@ -69,47 +80,107 @@ export default function CalendarView() {
             const exam = examMap[dateStr];
             const studied = studiedDates.has(dateStr);
             const isToday = year === realToday.getFullYear() && month === realToday.getMonth() && d === realToday.getDate();
-            const ec = exam ? SUBJECT_COLORS[exam.color] : null;
+            // For cells with multiple timetable exams, gather all subjects
+            const timetableExams = exam?._timetable || [];
+            const cellExams = timetableExams.length > 0
+              ? timetableExams.map(te => subjects.find(s => s.id === te.subject_id)).filter(Boolean)
+              : exam ? [exam] : [];
 
             return (
               <div key={d} onClick={() => openModal(d)}
-                className="aspect-square rounded-lg sm:rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-95 relative"
+                className="aspect-square rounded-lg sm:rounded-xl flex flex-col items-center justify-start pt-1.5 sm:pt-2 cursor-pointer transition-all hover:scale-95 relative overflow-hidden"
                 style={{
-                  background: isToday ? 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.15))' : studied ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.02)',
-                  border: isToday ? '1px solid rgba(139,92,246,0.4)' : '1px solid rgba(255,255,255,0.04)',
-                  boxShadow: isToday ? '0 0 15px rgba(124,58,237,0.2)' : 'none',
+                  background: isToday ? 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(59,130,246,0.15))' : exam ? 'rgba(124,58,237,0.06)' : studied ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.02)',
+                  border: isToday ? '1px solid rgba(139,92,246,0.4)' : exam ? '1px solid rgba(139,92,246,0.18)' : '1px solid rgba(255,255,255,0.04)',
+                  boxShadow: isToday ? '0 0 15px rgba(124,58,237,0.2)' : exam ? '0 0 8px rgba(124,58,237,0.12)' : 'none',
                 }}>
-                <span className={`text-[10px] sm:text-sm font-bold ${isToday ? 'text-violet-300' : 'text-gray-400'}`}>{d}</span>
-                <div className="flex gap-0.5 sm:gap-1 mt-px sm:mt-0.5">
+                <span className={`text-[10px] sm:text-sm font-bold leading-none ${isToday ? 'text-violet-300' : exam ? 'text-white' : 'text-gray-400'}`}>{d}</span>
+                <div className="flex gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 flex-wrap justify-center">
                   {studied && <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400" />}
-                  {exam && <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${ec?.bg || 'bg-violet-500'}`} />}
+                  {cellExams.map((sub, idx) => {
+                    const ec = SUBJECT_COLORS[sub?.color];
+                    return <div key={idx} className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${ec?.bg || 'bg-violet-500'}`} />;
+                  })}
                 </div>
+                {cellExams.length > 0 && (
+                  <span
+                    className="mt-0.5 sm:mt-1 text-[7px] sm:text-[9px] font-bold leading-tight text-center px-0.5 truncate w-full"
+                    style={{ color: SUBJECT_COLORS[cellExams[0]?.color]?.hex || '#a78bfa' }}
+                  >
+                    {cellExams.length === 1 ? cellExams[0].short_name : `${cellExams.length} exams`}
+                  </span>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Exam Legend */}
-      <div className="mt-4 flex flex-wrap gap-3">
-        {subjects.filter(s => s.exam_date).map(s => {
-          const c = SUBJECT_COLORS[s.color] || SUBJECT_COLORS.blue;
-          return (
-            <div key={s.id} className="flex items-center gap-1.5 text-xs text-gray-600">
-              <div className={`w-2 h-2 rounded-full ${c.bg}`} /> {s.short_name}: {new Date(s.exam_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </div>
-          );
-        })}
-      </div>
+      {/* Exam Legend — from exam_timetable (single source of truth) */}
+      {(() => {
+        const legendItems = [];
+        const seenSubjectDates = new Set();
+        (exams || []).forEach(e => {
+          const sub = subjects.find(s => s.id === e.subject_id);
+          if (sub && e.exam_date) {
+            const key = `${sub.id}__${e.exam_date}`;
+            if (!seenSubjectDates.has(key)) {
+              seenSubjectDates.add(key);
+              legendItems.push({ id: e.id, sub, date: e.exam_date });
+            }
+          }
+        });
+        legendItems.sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (legendItems.length === 0) return null;
+        return (
+          <div className="mt-4 flex flex-wrap gap-3">
+            {legendItems.map(item => {
+              const c = SUBJECT_COLORS[item.sub.color] || SUBJECT_COLORS.blue;
+              return (
+                <div key={item.id} className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <div className={`w-2 h-2 rounded-full ${c.bg}`} />
+                  <span style={{ color: c.hex }}>{item.sub.short_name}</span>
+                  <span className="text-gray-600">{item.sub.name}:</span>
+                  {new Date(item.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style={{ backdropFilter: 'blur(8px)' }}>
           <div className="rounded-2xl w-full max-w-sm p-6 shadow-2xl" style={{ background: 'rgba(15,15,40,0.95)', border: '1px solid rgba(139,92,246,0.2)' }}>
             <div className="flex justify-between items-center mb-5">
-              <div>
-                <h3 className="text-white font-bold">{new Date(modal.dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}</h3>
-                <p className="text-gray-600 text-xs mt-0.5">What do you want to record?</p>
+              <div className="flex-1 min-w-0 pr-3">
+                <h3 className="text-white font-bold">
+                  {new Date(modal.dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+                </h3>
+                {(() => {
+                  // Show all exams on this date in the modal header
+                  const dayExam = examMap[modal.dateStr];
+                  if (!dayExam) return null;
+                  const timetableExams = dayExam._timetable || [];
+                  const examSubs = timetableExams.length > 0
+                    ? timetableExams.map(te => subjects.find(s => s.id === te.subject_id)).filter(Boolean)
+                    : [dayExam];
+                  return (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {examSubs.map((sub, i) => {
+                        const ec = SUBJECT_COLORS[sub?.color];
+                        return (
+                          <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full font-bold`}
+                            style={{ background: (ec?.hex || '#7c3aed') + '22', color: ec?.hex || '#a78bfa' }}>
+                            {sub.short_name} Exam
+                          </span>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+                <p className="text-gray-600 text-xs mt-1.5">What do you want to record?</p>
               </div>
               <button onClick={() => setModal(null)}><X className="text-gray-600 hover:text-white w-5 h-5" /></button>
             </div>

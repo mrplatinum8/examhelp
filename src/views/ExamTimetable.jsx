@@ -97,7 +97,7 @@ export default function ExamTimetableView() {
           const sub = subjects.find(s => s.id === exam.subject_id);
           const c = SUBJECT_COLORS[sub?.color] || SUBJECT_COLORS.blue;
           const days = exam._days;
-          const isPast = days !== null && days < 0;
+          const isPast = days !== null && days < -1;
           const urgency = isPast ? 'past' : days <= 7 ? 'critical' : days <= 29 ? 'warning' : 'safe';
           const urgencyColor = urgency === 'past' ? 'text-gray-600' : urgency === 'critical' ? 'text-red-400' : urgency === 'warning' ? 'text-amber-400' : 'text-emerald-400';
           const urgencyBg = urgency === 'past' ? 'rgba(255,255,255,0.02)' : urgency === 'critical' ? 'rgba(239,68,68,0.06)' : urgency === 'warning' ? 'rgba(245,158,11,0.04)' : 'rgba(16,185,129,0.04)';
@@ -139,8 +139,14 @@ export default function ExamTimetableView() {
                 <div className="text-right shrink-0">
                   {!isPast && days !== null && (
                     <>
-                      <p className={`text-3xl font-black ${urgencyColor}`}>{days}</p>
-                      <p className="text-[10px] text-gray-600 uppercase font-bold tracking-wider">days left</p>
+                      {days === -1 ? (
+                        <p className={`text-xl font-black mt-2 ${urgencyColor}`}>Today</p>
+                      ) : (
+                        <>
+                          <p className={`text-3xl font-black ${urgencyColor}`}>{days}</p>
+                          <p className="text-[10px] text-gray-600 uppercase font-bold tracking-wider">days left</p>
+                        </>
+                      )}
                     </>
                   )}
                   {isPast && <p className="text-xs text-gray-600 font-bold">Completed</p>}

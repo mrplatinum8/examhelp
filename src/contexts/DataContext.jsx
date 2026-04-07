@@ -186,10 +186,11 @@ export function DataProvider({ session, children }) {
   }, [loadStudyLogs, showToast, uid]);
 
   const onUpdateExamDate = useCallback(async (subjectId, date) => {
-    const { error } = await supabase.from('subjects').update({ exam_date: date }).eq('id', subjectId);
-    if (error) { showToast('Failed to update exam date: ' + error.message, 'error'); return; }
-    await loadSubjects(); showToast('Exam date updated! 📌');
-  }, [loadSubjects, showToast]);
+    // exam_timetable is the single source of truth — insert a new exam entry
+    const { error } = await supabase.from('exam_timetable').insert({ user_id: uid, subject_id: subjectId, exam_date: date });
+    if (error) { showToast('Failed to set exam date: ' + error.message, 'error'); return; }
+    await loadExamTimetable(); showToast('Exam date set! 📌');
+  }, [loadExamTimetable, showToast, uid]);
 
   // Schedule CRUD
   const onAddSlot = useCallback(async (data) => {
