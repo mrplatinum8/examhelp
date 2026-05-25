@@ -17,6 +17,7 @@ const HeatmapView = lazy(() => import('./views/Heatmap'));
 const RevisionScheduleView = lazy(() => import('./views/RevisionSchedule'));
 const DailyScheduleView = lazy(() => import('./views/DailySchedule'));
 const ExamTimetableView = lazy(() => import('./views/ExamTimetable'));
+const StudyGuideView = lazy(() => import('./views/StudyGuide'));
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="exams" element={<ExamTimetableView />} />
           <Route path="analytics" element={<AnalyticsView />} />
           <Route path="heatmap" element={<HeatmapView />} />
+          <Route path="study-guide" element={<StudyGuideView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

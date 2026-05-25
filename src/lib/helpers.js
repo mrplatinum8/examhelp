@@ -17,7 +17,7 @@ export function getSubjectHex(colorKey) {
 }
 
 export const SUBJECTS_SEED = [
-  { name: 'Ordinary Differential Equations', short_name: 'ODE', color: 'blue', exam_date: null,
+  { name: 'Ordinary Differential Equations', short_name: 'ODE', color: 'blue', exam_date: '2026-06-15',
     topics: ['1st Order (Cooling, Growth)', 'Higher Order (Variation of Parameters)', 'Double Integrals (Polar, Order Change)', 'Vector Diff (Directional Deriv, Irrotational)', 'Vector Int (Green\'s, Stoke\'s, Gauss)'] },
   { name: 'Numerical Techniques & Probability Distributions', short_name: 'NTPD', color: 'amber', exam_date: '2026-04-20',
     topics: ['Roots (Bisection, N-R) & Interpolation', 'Integration (Trap/Simpson) & ODEs (R-K)', 'Laplace Transforms & Convolution', 'Normal & Poisson Distributions', 'Hypothesis Testing (Chi-Square)'] },

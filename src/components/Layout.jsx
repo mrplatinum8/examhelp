@@ -1,6 +1,6 @@
 import React, { useState, Suspense } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, Zap, ChevronLeft, ChevronRight, CalendarCheck, CalendarClock, GraduationCap, X } from 'lucide-react';
+import { BookOpen, Home, Clock, Calendar as CalendarIcon, Layers, BarChart2, Activity, Zap, ChevronLeft, ChevronRight, CalendarCheck, CalendarClock, GraduationCap, X, BookMarked } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 
 const NAV_ITEMS = [
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { path: '/exams',     label: 'Exams',     icon: GraduationCap },
   { path: '/analytics', label: 'Analytics', icon: BarChart2 },
   { path: '/heatmap',   label: 'Heatmap',   icon: Activity },
+  { path: '/study-guide', label: 'Study Guide', icon: BookMarked },
 ];
 
 /** Lazy loading spinner for Suspense */
