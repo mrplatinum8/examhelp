@@ -17,22 +17,22 @@ export function getSubjectHex(colorKey) {
 }
 
 export const SUBJECTS_SEED = [
-  { name: 'Ordinary Differential Equations', short_name: 'ODE', color: 'blue', exam_date: '2026-06-15',
+  { name: 'Ordinary Differential Equations', short_name: 'ODE', color: 'blue', exam_date: null, completed: true,
     topics: ['1st Order (Cooling, Growth)', 'Higher Order (Variation of Parameters)', 'Double Integrals (Polar, Order Change)', 'Vector Diff (Directional Deriv, Irrotational)', 'Vector Int (Green\'s, Stoke\'s, Gauss)'] },
-  { name: 'Numerical Techniques & Probability Distributions', short_name: 'NTPD', color: 'amber', exam_date: '2026-04-20',
+  { name: 'Numerical Techniques & Probability Distributions', short_name: 'NTPD', color: 'amber', exam_date: null, completed: true,
     topics: ['Roots (Bisection, N-R) & Interpolation', 'Integration (Trap/Simpson) & ODEs (R-K)', 'Laplace Transforms & Convolution', 'Normal & Poisson Distributions', 'Hypothesis Testing (Chi-Square)'] },
-  { name: 'Analog & Digital Electronics', short_name: 'ADE', color: 'emerald', exam_date: null,
-    topics: ['P-N Junction / Zener Diode', 'BJT or UJT Characteristics', 'FET Operation', 'K-map Boolean simplifications', 'Counter/Sequential Circuit Design'] },
-  { name: 'Software Engineering', short_name: 'SE', color: 'purple', exam_date: '2026-04-24',
-    topics: ['Process Models (Waterfall, Spiral, CMMI)', 'UML & Modeling (Sequence/Collab)', 'Testing Strategies (Black-box, Integration)', 'Risk Management', 'Software Configuration Management (SCM)'] },
-  { name: 'Web Technologies', short_name: 'WT', color: 'pink', exam_date: '2026-04-21',
+  { name: 'Web Technologies', short_name: 'WT', color: 'pink', exam_date: '2026-11-17', completed: false,
     topics: ['PHP (MySQL, Sessions/Cookies)', 'HTML Forms & XML', 'Servlets (Life Cycle, HTTP)', 'JSP (Execution Phases, DB)', 'JavaScript (Events, Validation)'] },
-  { name: 'Compiler Design', short_name: 'CD', color: 'red', exam_date: '2026-04-23',
+  { name: 'Analog & Digital Electronics', short_name: 'ADE', color: 'emerald', exam_date: '2026-11-18', completed: false,
+    topics: ['P-N Junction / Zener Diode', 'BJT or UJT Characteristics', 'FET Operation', 'K-map Boolean simplifications', 'Counter/Sequential Circuit Design'] },
+  { name: 'Compiler Design', short_name: 'CD', color: 'red', exam_date: '2026-11-19', completed: false,
     topics: ['Parsing (Predictive, SLR)', 'Intermediate-Code (Quadruples/Triples)', 'Lexical Analysis (Input Buffering)', 'Run-Time Environments (Stack/Heap)', 'Optimization (Data Flow & Peephole)'] },
-  { name: 'Data Visualization', short_name: 'DV', color: 'cyan', exam_date: '2026-04-29',
+  { name: 'Data Visualization', short_name: 'DV', color: 'cyan', exam_date: '2026-11-24', completed: false,
     topics: ['Cognition & 8 Visual Variables', 'Spatial/Geospatial & Map Projections', 'Time-oriented & Multivariate Data', 'Text (Vector Space) & Graph Data', 'Design Problems in Visualizations'] },
-  { name: 'Business Mgmt & Financial Analysis', short_name: 'BMFA', color: 'indigo', exam_date: '2026-05-04',
+  { name: 'Business Mgmt & Financial Analysis', short_name: 'BMFA', color: 'indigo', exam_date: '2026-11-27', completed: false,
     topics: ['Management Theories (Taylor, Fayol)', 'Demand Forecasting Methods', 'Break-Even Analysis', 'Financial Statements Ratio Analysis'] },
+  { name: 'Software Engineering', short_name: 'SE', color: 'purple', exam_date: '2026-12-07', completed: false,
+    topics: ['Process Models (Waterfall, Spiral, CMMI)', 'UML & Modeling (Sequence/Collab)', 'Testing Strategies (Black-box, Integration)', 'Risk Management', 'Software Configuration Management (SCM)'] },
 ];
 
 /**

@@ -11,8 +11,10 @@ create table if not exists subjects (
   short_name  text not null,
   color       text not null default 'blue',
   exam_date   date,
+  completed   boolean default false,
   created_at  timestamptz default now()
 );
+alter table subjects add column if not exists completed boolean default false;
 
 -- 2. TOPICS
 create table if not exists topics (

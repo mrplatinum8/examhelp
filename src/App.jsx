@@ -4,10 +4,15 @@ import { BookOpen } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import AuthGate from './components/AuthGate';
 import Layout from './components/Layout';
+import StealthEditor from './components/StealthEditor';
 import { DataProvider } from './contexts/DataContext';
 
 // Lazy-load views for code splitting
 const DashboardView = lazy(() => import('./views/Dashboard'));
+const BacklogBusterView = lazy(() => import('./views/BacklogBuster'));
+const HabitMatrixView = lazy(() => import('./views/HabitMatrix'));
+const MasterCampaignsView = lazy(() => import('./views/MasterCampaigns'));
+const StealthWorkdayView = lazy(() => import('./views/StealthWorkday'));
 const SubjectsView = lazy(() => import('./views/Subjects'));
 const PomodoroView = lazy(() => import('./views/Pomodoro'));
 const CalendarView = lazy(() => import('./views/Calendar'));
@@ -22,6 +27,7 @@ const StudyGuideView = lazy(() => import('./views/StudyGuide'));
 export default function App() {
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [stealthActive, setStealthActive] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => setAuthLoading(false), 10000);
@@ -43,6 +49,18 @@ export default function App() {
     return () => { subscription.unsubscribe(); clearTimeout(timeout); };
   }, []);
 
+  // Global hotkey for Stealth Mode toggle (Alt + S)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.altKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        setStealthActive((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
   if (authLoading) return (
     <div className="min-h-screen bg-[#07071a] mesh-bg flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -57,23 +75,33 @@ export default function App() {
   if (!session) return <AuthGate />;
 
   return (
-    <DataProvider session={session}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<DashboardView />} />
-          <Route path="subjects" element={<SubjectsView />} />
-          <Route path="pomodoro" element={<PomodoroView />} />
-          <Route path="calendar" element={<CalendarView />} />
-          <Route path="flashcards" element={<FlashcardsView />} />
-          <Route path="revision" element={<RevisionScheduleView />} />
-          <Route path="schedule" element={<DailyScheduleView />} />
-          <Route path="exams" element={<ExamTimetableView />} />
-          <Route path="analytics" element={<AnalyticsView />} />
-          <Route path="heatmap" element={<HeatmapView />} />
-          <Route path="study-guide" element={<StudyGuideView />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </DataProvider>
+    <>
+      {stealthActive && (
+        <StealthEditor onExit={() => setStealthActive(false)} />
+      )}
+
+      <DataProvider session={session}>
+        <Routes>
+          <Route element={<Layout onActivateStealth={() => setStealthActive(true)} />}>
+            <Route index element={<DashboardView onActivateStealth={() => setStealthActive(true)} />} />
+            <Route path="backlog" element={<BacklogBusterView />} />
+            <Route path="habits" element={<HabitMatrixView />} />
+            <Route path="campaigns" element={<MasterCampaignsView />} />
+            <Route path="stealth" element={<StealthWorkdayView onActivateStealth={() => setStealthActive(true)} />} />
+            <Route path="subjects" element={<SubjectsView />} />
+            <Route path="pomodoro" element={<PomodoroView />} />
+            <Route path="calendar" element={<CalendarView />} />
+            <Route path="flashcards" element={<FlashcardsView />} />
+            <Route path="revision" element={<RevisionScheduleView />} />
+            <Route path="schedule" element={<DailyScheduleView />} />
+            <Route path="exams" element={<ExamTimetableView />} />
+            <Route path="analytics" element={<AnalyticsView />} />
+            <Route path="heatmap" element={<HeatmapView />} />
+            <Route path="study-guide" element={<StudyGuideView />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </DataProvider>
+    </>
   );
 }

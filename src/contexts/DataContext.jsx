@@ -48,10 +48,29 @@ export function DataProvider({ session, children }) {
         setSubjects([]); return;
       }
       if (data) {
-        setSubjects(data.map(s => ({
-          ...s,
-          progress: s.topics?.length ? Math.round(s.topics.filter(t => t.done).length / s.topics.length * 100) : 0,
-        })));
+        let stored = {};
+        try {
+          const raw = localStorage.getItem(`examfocus_completed_subs_${uid || 'anon'}`);
+          if (raw) stored = JSON.parse(raw);
+        } catch {}
+
+        setSubjects(data.map(s => {
+          const totalTopics = s.topics?.length || 0;
+          const doneTopics = s.topics?.filter(t => t.done).length || 0;
+          const progress = totalTopics ? Math.round((doneTopics / totalTopics) * 100) : 0;
+          
+          const isCompleted = s.completed !== undefined && s.completed !== null
+            ? Boolean(s.completed)
+            : (stored[s.id] !== undefined
+                ? Boolean(stored[s.id])
+                : (['ODE', 'NTPD'].includes(s.short_name) || (totalTopics > 0 && doneTopics === totalTopics && !s.exam_date)));
+
+          return {
+            ...s,
+            completed: isCompleted,
+            progress,
+          };
+        }));
       } else {
         setSubjects([]);
       }
@@ -131,6 +150,26 @@ export function DataProvider({ session, children }) {
     if (error) { showToast('Failed to delete subject: ' + error.message, 'error'); return; }
     await loadSubjects(); showToast('Subject deleted.');
   }, [loadSubjects, showToast]);
+
+  const onToggleSubjectCompleted = useCallback(async (subjectId, currentCompleted) => {
+    const nextVal = !currentCompleted;
+    // Persist to local cache immediately
+    try {
+      const key = `examfocus_completed_subs_${uid || 'anon'}`;
+      const raw = localStorage.getItem(key);
+      const stored = raw ? JSON.parse(raw) : {};
+      stored[subjectId] = nextVal;
+      localStorage.setItem(key, JSON.stringify(stored));
+    } catch {}
+
+    // Update in Supabase if column exists
+    try {
+      await supabase.from('subjects').update({ completed: nextVal }).eq('id', subjectId);
+    } catch {}
+
+    setSubjects(prev => prev.map(s => s.id === subjectId ? { ...s, completed: nextVal } : s));
+    showToast(nextVal ? 'Subject marked as completed! 🏆' : 'Subject moved to active! 📚');
+  }, [showToast, uid]);
 
   const onAddTopic = useCallback(async (subjectId, label) => {
     const { error } = await supabase.from('topics').insert({ user_id: uid, subject_id: subjectId, label, done: false });
@@ -244,7 +283,7 @@ export function DataProvider({ session, children }) {
     schedule, exams: examTimetable,
     dataLoading, toast,
     // Actions
-    showToast, dismissToast, onAddSubject, onDeleteSubject, onAddTopic, onDeleteTopic, onToggleTopic, onAddSession, onAddCard, onRateCard,
+    showToast, dismissToast, onAddSubject, onDeleteSubject, onToggleSubjectCompleted, onAddTopic, onDeleteTopic, onToggleTopic, onAddSession, onAddCard, onRateCard,
     onDeleteCard, onAddStudyLog, onUpdateExamDate,
     onAddSlot, onUpdateSlot, onDeleteSlot,
     onAddExam, onUpdateExam, onDeleteExam,
