@@ -73,7 +73,7 @@ All tables are user-scoped via `user_id` with Row Level Security enabled.
 
 | Table | Key Columns |
 |---|---|
-| `subjects` | `id`, `user_id`, `name`, `short_name`, `color`, `exam_date` |
+| `subjects` | `id`, `user_id`, `name`, `short_name`, `color`, `completed` |
 | `topics` | `id`, `user_id`, `subject_id`, `label`, `done`, `position` |
 | `pomodoro_sessions` | `id`, `user_id`, `subject_id`, `duration_minutes`, `started_at` |
 | `flashcards` | `id`, `user_id`, `subject_id`, `question`, `answer`, `interval_days`, `ease_factor`, `next_review` |

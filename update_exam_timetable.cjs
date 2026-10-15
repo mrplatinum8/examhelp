@@ -103,24 +103,7 @@ async function run() {
     console.log(`Inserted ${inserted.length} exam timetable entries!`);
   }
 
-  // 3. Update subjects table exam_date
-  console.log('Updating subjects table exam_date...');
-  for (const t of timetable) {
-    const subId = subMap[t.short];
-    if (subId) {
-      await supabase.from('subjects').update({ exam_date: t.exam_date }).eq('id', subId);
-    }
-  }
-
-  // Reset exam_date for subjects not in this timetable (e.g. ODE, NTPD)
-  for (const s of subjects) {
-    if (!timetable.some(t => t.short === s.short_name.toUpperCase())) {
-      await supabase.from('subjects').update({ exam_date: null }).eq('id', s.id);
-    }
-  }
-  console.log('Subjects exam_date synchronized.');
-
-  // 4. Verify results
+  // 3. Verify results. exam_timetable is the only exam-date store.
   const { data: checkExams } = await supabase
     .from('exam_timetable')
     .select('*, subjects(short_name, name)')

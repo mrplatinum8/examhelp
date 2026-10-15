@@ -10,11 +10,14 @@ create table if not exists subjects (
   name        text not null,
   short_name  text not null,
   color       text not null default 'blue',
-  exam_date   date,
   completed   boolean default false,
   created_at  timestamptz default now()
 );
 alter table subjects add column if not exists completed boolean default false;
+
+-- Exam dates belong exclusively in exam_timetable.  Existing deployments may
+-- retain an old subjects.exam_date column; it is intentionally ignored rather
+-- than dropped here so re-running this schema never discards user data.
 
 -- 2. TOPICS
 create table if not exists topics (

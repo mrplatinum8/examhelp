@@ -63,7 +63,7 @@ export function DataProvider({ session, children }) {
             ? Boolean(s.completed)
             : (stored[s.id] !== undefined
                 ? Boolean(stored[s.id])
-                : (['ODE', 'NTPD'].includes(s.short_name) || (totalTopics > 0 && doneTopics === totalTopics && !s.exam_date)));
+                : (['ODE', 'NTPD'].includes(s.short_name) || (totalTopics > 0 && doneTopics === totalTopics)));
 
           return {
             ...s,

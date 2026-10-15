@@ -96,7 +96,7 @@ examhelp/
 
 | Table               | Key Columns                                                      | Purpose                          |
 |---------------------|------------------------------------------------------------------|----------------------------------|
-| `subjects`          | `name`, `short_name`, `color`, `exam_date`                       | Academic subjects                |
+| `subjects`          | `name`, `short_name`, `color`, `completed`                       | Academic subjects                |
 | `topics`            | `subject_id`, `label`, `done`, `position`                        | Per-subject checklist items      |
 | `pomodoro_sessions` | `subject_id`, `duration_minutes`, `started_at`                   | Completed pomodoro records       |
 | `flashcards`        | `subject_id`, `question`, `answer`, `interval_days`, `ease_factor`, `next_review` | Spaced-repetition cards |
