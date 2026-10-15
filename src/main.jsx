@@ -5,6 +5,17 @@ import { ErrorBoundary } from 'react-error-boundary'
 import './index.css'
 import App from './App.jsx'
 
+// Automatically reload when a new Service Worker activates after a deployment
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+}
+
 // Automatically reload when Vite encounters a missing chunk from an app redeployment
 window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();
