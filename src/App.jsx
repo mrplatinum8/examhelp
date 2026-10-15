@@ -7,22 +7,24 @@ import Layout from './components/Layout';
 import StealthEditor from './components/StealthEditor';
 import { DataProvider } from './contexts/DataContext';
 
-// Lazy-load views for code splitting
-const DashboardView = lazy(() => import('./views/Dashboard'));
-const BacklogBusterView = lazy(() => import('./views/BacklogBuster'));
-const HabitMatrixView = lazy(() => import('./views/HabitMatrix'));
-const MasterCampaignsView = lazy(() => import('./views/MasterCampaigns'));
-const StealthWorkdayView = lazy(() => import('./views/StealthWorkday'));
-const SubjectsView = lazy(() => import('./views/Subjects'));
-const PomodoroView = lazy(() => import('./views/Pomodoro'));
-const CalendarView = lazy(() => import('./views/Calendar'));
-const FlashcardsView = lazy(() => import('./views/Flashcards'));
-const AnalyticsView = lazy(() => import('./views/Analytics'));
-const HeatmapView = lazy(() => import('./views/Heatmap'));
-const RevisionScheduleView = lazy(() => import('./views/RevisionSchedule'));
-const DailyScheduleView = lazy(() => import('./views/DailySchedule'));
-const ExamTimetableView = lazy(() => import('./views/ExamTimetable'));
-const StudyGuideView = lazy(() => import('./views/StudyGuide'));
+import { lazyWithRetry } from './lib/lazyWithRetry';
+
+// Lazy-load views with auto-retry on new deployments
+const DashboardView = lazyWithRetry(() => import('./views/Dashboard'));
+const BacklogBusterView = lazyWithRetry(() => import('./views/BacklogBuster'));
+const HabitMatrixView = lazyWithRetry(() => import('./views/HabitMatrix'));
+const MasterCampaignsView = lazyWithRetry(() => import('./views/MasterCampaigns'));
+const StealthWorkdayView = lazyWithRetry(() => import('./views/StealthWorkday'));
+const SubjectsView = lazyWithRetry(() => import('./views/Subjects'));
+const PomodoroView = lazyWithRetry(() => import('./views/Pomodoro'));
+const CalendarView = lazyWithRetry(() => import('./views/Calendar'));
+const FlashcardsView = lazyWithRetry(() => import('./views/Flashcards'));
+const AnalyticsView = lazyWithRetry(() => import('./views/Analytics'));
+const HeatmapView = lazyWithRetry(() => import('./views/Heatmap'));
+const RevisionScheduleView = lazyWithRetry(() => import('./views/RevisionSchedule'));
+const DailyScheduleView = lazyWithRetry(() => import('./views/DailySchedule'));
+const ExamTimetableView = lazyWithRetry(() => import('./views/ExamTimetable'));
+const StudyGuideView = lazyWithRetry(() => import('./views/StudyGuide'));
 
 export default function App() {
   const [session, setSession] = useState(null);
